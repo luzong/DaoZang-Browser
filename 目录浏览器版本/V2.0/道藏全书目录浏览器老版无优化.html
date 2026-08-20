@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>道藏全书目录浏览器</title>
+  <script src="data.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #f5efe0;
+      font-family: "Microsoft YaHei", "微软雅黑", "SimSun", "宋体", "Noto Serif SC", serif;
+      color: #3e2e1f;
+      padding: 0;
+      line-height: 2;
+      padding-top: 80px; /* 为固定导航栏留出空间 */
+    }
+
+    /* ==================== 顶部导航栏 ==================== */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      background: linear-gradient(135deg, #4a2c1a 0%, #5d3a1a 50%, #4a2c1a 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border-bottom: 2px solid #b8864e;
+    }
+    .nav-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1.5rem;
+      flex-wrap: wrap;
+    }
+    /* Logo/品牌区 */
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 0.3rem 0;
+    }
+    .nav-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #d4a84b 0%, #b8864e 50%, #8b6914 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 2px solid #e3c78a;
+      flex-shrink: 0;
+    }
+    .nav-logo svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+    .nav-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e3c78a;
+      letter-spacing: 3px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    /* 菜单列表 */
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 0.3rem 0;
+    }
+    .nav-menu li {
+      position: relative;
+    }
+    .nav-menu a {
+      display: block;
+      padding: 0.4rem 0.9rem;
+      color: #e3d5b8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 1.5rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      letter-spacing: 1px;
+      border: 1px solid transparent;
+    }
+    .nav-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(227, 199, 138, 0.4);
+    }
+    .nav-menu a.active {
+      background: #b8864e;
+      color: #fff;
+      border-color: #d4a84b;
+      font-weight: bold;
+    }
+    /* 分隔符 */
+    .nav-separator {
+      color: #8b6b4a;
+      font-size: 0.8rem;
+      margin: 0 0.1rem;
+      user-select: none;
+    }
+    /* 下拉菜单（预留扩展） */
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4a2c1a;
+      border: 1px solid #b8864e;
+      border-radius: 0.8rem;
+      padding: 0.5rem 0;
+      min-width: 140px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+    .nav-dropdown:hover .nav-dropdown-content {
+      display: block;
+    }
+    .nav-dropdown-content a {
+      display: block;
+      padding: 0.4rem 1rem;
+      border-radius: 0;
+      font-size: 0.85rem;
+    }
+
+    /* 移动端菜单按钮 */
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid #b8864e;
+      color: #e3c78a;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.3rem 0.7rem;
+      border-radius: 0.5rem;
+      margin-left: auto;
+    }
+
+    @media (max-width: 900px) {
+      .nav-menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 0;
+      }
+      .nav-menu.open {
+        display: flex;
+      }
+      .nav-toggle {
+        display: block;
+      }
+      .nav-inner {
+        flex-wrap: wrap;
+      }
+      .nav-separator {
+        display: none;
+      }
+      body {
+        padding-top: 60px;
+      }
+    }
+
+    /* ==================== 原有样式 ==================== */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: rgba(255, 250, 240, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 2.5rem;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 50px rgba(100, 70, 30, 0.2);
+      border: 1px solid #ddc7a2;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.8rem;
+      color: #4a2c1a;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      letter-spacing: 6px;
+      text-shadow: 2px 2px 0 rgba(200, 170, 110, 0.3);
+    }
+    .sub-info {
+      text-align: center;
+      font-size: 1rem;
+      color: #5b4a32;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px dashed #c8aa7a;
+    }
+    .search-box {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-box input {
+      width: 80%;
+      max-width: 600px;
+      padding: 0.7rem 1.8rem;
+      border: 2px solid #dbbc87;
+      border-radius: 2.5rem;
+      font-size: 1rem;
+      background: #fef9f0;
+      color: #3e2e1f;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .search-box input:focus {
+      border-color: #8b4513;
+    }
+    .no-result {
+      text-align: center;
+      color: #8b5a2b;
+      padding: 1rem;
+      display: none;
+      font-size: 1.1rem;
+    }
+    .quick-nav {
+      margin-bottom: 2rem;
+    }
+    .quick-nav .nav-divider {
+      text-align: center;
+      margin: 1.5rem 0 0.8rem;
+      position: relative;
+    }
+    .quick-nav .nav-divider span {
+      background: #f5efe0;
+      padding: 0 1.2rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #7b5a3a;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+    }
+    .quick-nav .nav-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #c8aa7a, #c8aa7a, transparent);
+      z-index: 0;
+    }
+    .nav-books-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0;
+    }
+    .nav-book-card {
+      background: #f7efe0;
+      border: 1px solid #dbbc87;
+      border-radius: 2rem;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #5d3a1a;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 8px rgba(120, 80, 40, 0.1);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .nav-book-card:hover {
+      background: #e7d5b7;
+      border-color: #b38b5b;
+      transform: translateY(-2px);
+    }
+    .series-divider {
+      text-align: center;
+      margin: 2.5rem 0 1.5rem;
+      position: relative;
+    }
+    .series-divider span {
+      background: #f5efe0;
+      padding: 0 1.5rem;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #5d3a1a;
+      letter-spacing: 3px;
+      position: relative;
+      z-index: 1;
+    }
+    .series-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 5%;
+      right: 5%;
+      height: 2px;
+      background: linear-gradient(to right, transparent, #b8864e, #b8864e, transparent);
+      z-index: 0;
+    }
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .book-card {
+      background: #fbf5e8;
+      border: 1px solid #dbbc87;
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      box-shadow: 0 8px 20px rgba(120, 80, 40, 0.1);
+      transition: all 0.2s ease;
+    }
+    .book-card:hover {
+      box-shadow: 0 12px 28px rgba(120, 80, 40, 0.18);
+      border-color: #b38b5b;
+    }
+    .book-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #8b4513;
+      border-bottom: 2px solid #dbbc87;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .book-title .collapse-icon {
+      font-size: 1rem;
+      transition: transform 0.3s;
+    }
+    .book-title.collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+    .entry-list {
+      list-style: none;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .entry-list.collapsed {
+      max-height: 0 !important;
+    }
+    .entry-item {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0.25rem 0.4rem;
+      margin-bottom: 0.15rem;
+      border-bottom: 1px dotted #dec29b;
+      border-radius: 0.4rem;
+      transition: background 0.2s;
+    }
+    .entry-item:hover {
+      background: #f4e5cf;
+    }
+    .clickable-entry {
+      cursor: pointer;
+      text-decoration: none;
+      color: #2e4a2b;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .clickable-entry:hover {
+      color: #1e3b1a;
+      text-decoration: underline;
+      text-decoration-color: #b4945a;
+    }
+    .entry-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #3b2a17;
+    }
+    .entry-page {
+      font-size: 0.8rem;
+      color: #6b4f32;
+      background: #efe0ca;
+      padding: 0.1rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: 0.5rem;
+    }
+    .back-to-top {
+      position: fixed;
+      right: 2rem;
+      bottom: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #8b4513;
+      color: #fff;
+      border: 2px solid #dbbc87;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(100, 70, 40, 0.3);
+      z-index: 1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.3s;
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    hr {
+      margin: 2rem 0;
+      border: 1px solid #d0b182;
+    }
+    .footer {
+      text-align: right;
+      font-size: 0.9rem;
+      color: #7b684c;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .books-grid {
+        grid-template-columns: 1fr;
+      }
+      body {
+        padding-top: 60px;
+      }
+      .container {
+        padding: 1.5rem 1rem;
+        border-radius: 1.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== 顶部导航栏 ==================== -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <!-- Logo + 品牌名 -->
+    <a href="道藏全书目录.html" class="nav-brand" title="道藏全书首页">
+      <div class="nav-logo">
+        <!-- 八卦/太极风格图标 -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="11" fill="none" stroke="#fff" stroke-width="2"/>
+          <path d="M12 1 A11 11 0 0 1 12 23 A5.5 5.5 0 0 1 12 12 A5.5 5.5 0 0 0 12 1" fill="#fff"/>
+          <circle cx="12" cy="7.5" r="2" fill="#4a2c1a"/>
+          <circle cx="12" cy="16.5" r="2" fill="#fff"/>
+        </svg>
+      </div>
+      <span class="nav-title">道藏全书</span>
+    </a>
+
+    <!-- 移动端菜单按钮 -->
+    <button class="nav-toggle" onclick="toggleNavMenu()" aria-label="菜单">☰</button>
+
+    <!-- 导航菜单 -->
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="道藏全书目录.html" class="active" title="首页">📚 首页</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./正统道藏/0正统道藏目录.html" title="正统道藏">正统道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./藏外道书/0藏外道书目录.html" title="藏外道书">藏外道书</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./道藏辑要/0道藏辑要目录.html" title="道藏辑要">道藏辑要</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./敦煌道藏/0敦煌道藏目录.html" title="敦煌道藏">敦煌道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./中华道藏/0中华道藏目录.html" title="中华道藏">中华道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./中华续道藏/0中华续道藏目录.html" title="中华续道藏">中华续道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./庄林续道藏/0庄林续道藏目录.html" title="庄林续道藏">庄林续道藏</a></li>
+      <!-- 
+      ==================== 扩展菜单项位置 ====================
+      如需添加更多菜单项，请按以下格式添加：
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="你的链接.html" title="标题">显示名称</a></li>
+      
+      如需下拉菜单，使用以下格式：
+      <li class="nav-dropdown">
+        <a href="javascript:void(0)">更多 ▼</a>
+        <div class="nav-dropdown-content">
+          <a href="link1.html">子菜单1</a>
+          <a href="link2.html">子菜单2</a>
+        </div>
+      </li>
+      ==================== 扩展菜单项位置结束 ==================== 
+      -->
+    </ul>
+  </div>
+</nav>
+
+<!-- ==================== 主内容区 ==================== -->
+<div class="container" id="top">
+  <h1>道藏全书目录浏览器</h1>
+  <div class="sub-info">
+    <p>点击经名在新标签页打开PDF · 支持Ctrl+F搜索 · 双列卡片布局</p>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索经名...（支持跨系列全局搜索）" oninput="filterAllEntries()">
+  </div>
+  <div class="no-result" id="noResult">未找到匹配的经文</div>
+
+  <!-- 快速导航 -->
+  <div class="quick-nav" id="quickNav"></div>
+
+  <!-- 动态生成目录区域 -->
+  <div id="dynamic-content"></div>
+
+  <hr>
+  <div class="footer">道藏全书目录浏览器 · 数据持续扩充中</div>
+</div>
+
+<button class="back-to-top" id="backToTop" title="回到顶部">▲</button>
+
+<script>
+(function() {
+  // ==================== 导航菜单交互 ====================
+  window.toggleNavMenu = function() {
+    const menu = document.getElementById('navMenu');
+    menu.classList.toggle('open');
+  };
+
+  // 点击菜单项后关闭移动端菜单
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('navMenu');
+    const toggle = document.querySelector('.nav-toggle');
+    if (menu.classList.contains('open') && !e.target.closest('.nav-menu') && !e.target.closest('.nav-toggle')) {
+      menu.classList.remove('open');
+    }
+  });
+
+  // ==================== 路径配置 ====================
+  function getBasePath() {
+    let basePath = '';
+    if (window.location.protocol === 'file:') {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      if (lastSlash !== -1) {
+        basePath = path.substring(0, lastSlash + 1);
+      }
+    }
+    return basePath;
+  }
+  const basePath = getBasePath();
+
+  // 道藏系列文件夹路径配置（相对于HTML文件所在目录）
+  const seriesPaths = {
+    "正统道藏": "正统道藏/",
+    "藏外道书": "藏外道书/",
+    "道藏辑要": "道藏辑要/",
+    "敦煌道藏": "敦煌道藏/",
+    "中华道藏": "中华道藏/",
+    "中华续道藏": "中华续道藏/",
+    "庄林续道藏": "庄林续道藏/"
+  };
+
+  function getFullPath(seriesName, fileName) {
+    const folder = seriesPaths[seriesName] || '';
+    return basePath + folder + fileName;
+  }
+
+
+  const contentDiv = document.getElementById('dynamic-content');
+  const quickNavDiv = document.getElementById('quickNav');
+
+  // ==================== 构建快速导航 ====================
+  function buildQuickNav() {
+    let navHtml = '';
+    for (const series of allSeries) {
+      navHtml += `<div class="nav-divider"><span>◆ ${series.name} ◆</span></div>`;
+      navHtml += '<div class="nav-books-grid">';
+      for (const book of series.books) {
+        navHtml += `<span class="nav-book-card" onclick="scrollToBook('${book.id}')">${book.name}</span>`;
+      }
+      navHtml += '</div>';
+    }
+    quickNavDiv.innerHTML = navHtml;
+  }
+
+  // ==================== 构建所有道藏内容 ====================
+  function buildAllContent() {
+    let html = '';
+    for (const series of allSeries) {
+      html += `<div class="series-divider"><span>◆ ${series.name} ◆</span></div>`;
+      html += '<div class="books-grid">';
+      for (const book of series.books) {
+        html += renderBookCard(book);
+      }
+      html += '</div>';
+    }
+    contentDiv.innerHTML = html;
+
+    // 初始化所有列表的折叠状态（默认展开）
+    for (const series of allSeries) {
+      for (const book of series.books) {
+        const list = document.getElementById('list-' + book.id);
+        if (list) {
+          list.style.maxHeight = list.scrollHeight + 'px';
+        }
+      }
+    }
+  }
+
+function renderBookCard(book) {
+    let html = `<div class="book-card" data-series="${book.seriesName || ''}" data-bookid="${book.id}" id="book-${book.id}">`;
+    html += `<div class="book-title" onclick="toggleSection('${book.id}')">`;
+    html += `<span>${book.name} <small style="font-size:0.7em;color:#8b5a2b;">(${book.entries.length}条)</small></span>`;
+    html += `<span class="collapse-icon">▼</span>`;
+    html += `</div>`;
+    html += `<ul class="entry-list" id="list-${book.id}" style="max-height: 50000px;">`;
+    for (const entry of book.entries) {
+      html += `<li class="entry-item" data-search="${entry.title.toLowerCase()}">`;
+      let seriesName = '';
+      for (const series of allSeries) {
+        for (const b of series.books) {
+          if (b.id === book.id) {
+            seriesName = series.name;
+            break;
+          }
+        }
+        if (seriesName) break;
+      }
+      // 显示原始页数，跳转时加偏移量
+      html += `<span class="clickable-entry" onclick="openPDF('${seriesName}', '${book.file}', ${entry.page}, ${book.offset || 0})" title="打开 ${book.file} 第${entry.page + (book.offset || 0)}页（原始${entry.page} + 偏移${book.offset || 0}）">`;
+      html += `<span class="entry-title">${entry.title}</span>`;
+      html += `<span class="entry-page">📄 ${entry.page}</span>`;
+      html += `</span></li>`;
+    }
+    html += `</ul></div>`;
+    return html;
+  }
+
+
+
+
+  // ==================== 全局函数 ====================
+window.openPDF = function(seriesName, fileName, pageNumber, offset) {
+    const realPage = pageNumber + (offset || 0);
+    const fullPath = getFullPath(seriesName, fileName);
+    const url = fullPath + '#page=' + realPage;
+    window.open(url, '_blank');
+};
+
+  window.toggleSection = function(id) {
+    const list = document.getElementById('list-' + id);
+    if (!list) return;
+    const card = list.closest('.book-card');
+    const title = card.querySelector('.book-title');
+    if (list.classList.contains('collapsed')) {
+      list.classList.remove('collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      title.classList.remove('collapsed');
+    } else {
+      list.style.maxHeight = list.scrollHeight + 'px';
+      requestAnimationFrame(() => {
+        list.classList.add('collapsed');
+        list.style.maxHeight = '0px';
+        title.classList.add('collapsed');
+      });
+    }
+  };
+
+  window.scrollToBook = function(id) {
+    const element = document.getElementById('book-' + id);
+    if (element) {
+      // 考虑固定导航栏的高度偏移
+      const navHeight = document.querySelector('.top-nav').offsetHeight;
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navHeight - 20;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      
+      element.style.transition = 'background 0.5s';
+      element.style.background = '#f5e7d5';
+      setTimeout(() => {
+        element.style.background = '';
+      }, 2000);
+      
+      const list = document.getElementById('list-' + id);
+      if (list && list.classList.contains('collapsed')) {
+        list.classList.remove('collapsed');
+        list.style.maxHeight = list.scrollHeight + 'px';
+        const card = list.closest('.book-card');
+        const title = card.querySelector('.book-title');
+        title.classList.remove('collapsed');
+      }
+    }
+  };
+
+  window.filterAllEntries = function() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const noResult = document.getElementById('noResult');
+    let foundAny = false;
+
+    const cards = document.querySelectorAll('.book-card');
+    for (const card of cards) {
+      const list = card.querySelector('.entry-list');
+      const items = list.querySelectorAll('.entry-item');
+      let cardVisible = false;
+      for (const item of items) {
+        const searchData = item.getAttribute('data-search') || '';
+        if (query === '' || searchData.includes(query)) {
+          item.style.display = '';
+          cardVisible = true;
+          if (query !== '') foundAny = true;
+        } else {
+          item.style.display = 'none';
+        }
+      }
+      card.style.display = cardVisible || query === '' ? '' : 'none';
+    }
+
+    const dividers = document.querySelectorAll('.series-divider');
+    for (const divider of dividers) {
+      let nextSibling = divider.nextElementSibling;
+      if (nextSibling && nextSibling.classList.contains('books-grid')) {
+        const allCards = nextSibling.querySelectorAll('.book-card');
+        if (query === '') {
+          divider.style.display = '';
+        } else {
+          let anyVisible = false;
+          for (const c of allCards) {
+            if (c.style.display !== 'none') {
+              anyVisible = true;
+              break;
+            }
+          }
+          divider.style.display = anyVisible ? '' : 'none';
+        }
+      }
+    }
+
+    noResult.style.display = (!foundAny && query !== '') ? 'block' : 'none';
+  };
+
+  // 回到顶部
+  const backBtn = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    backBtn.classList.toggle('show', window.scrollY > 400);
+  });
+  backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ==================== 初始化 ====================
+  buildQuickNav();
+  buildAllContent();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>中华续道藏目录浏览器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #f5efe0;
+      font-family: "Microsoft YaHei", "微软雅黑", "SimSun", "宋体", "Noto Serif SC", serif;
+      color: #3e2e1f;
+      padding: 0;
+      line-height: 2.2;
+      padding-top: 80px;
+    }
+
+    /* ==================== 顶部导航栏 ==================== */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      background: linear-gradient(135deg, #4a2c1a 0%, #5d3a1a 50%, #4a2c1a 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border-bottom: 2px solid #b8864e;
+    }
+    .nav-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1.5rem;
+      flex-wrap: wrap;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 0.3rem 0;
+    }
+    .nav-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #d4a84b 0%, #b8864e 50%, #8b6914 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 2px solid #e3c78a;
+      flex-shrink: 0;
+    }
+    .nav-logo svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+    .nav-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e3c78a;
+      letter-spacing: 3px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 0.3rem 0;
+    }
+    .nav-menu li {
+      position: relative;
+    }
+    .nav-menu a {
+      display: block;
+      padding: 0.4rem 0.9rem;
+      color: #e3d5b8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 1.5rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      letter-spacing: 1px;
+      border: 1px solid transparent;
+    }
+    .nav-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(227, 199, 138, 0.4);
+    }
+    .nav-menu a.active {
+      background: #b8864e;
+      color: #fff;
+      border-color: #d4a84b;
+      font-weight: bold;
+    }
+    .nav-separator {
+      color: #8b6b4a;
+      font-size: 0.8rem;
+      margin: 0 0.1rem;
+      user-select: none;
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4a2c1a;
+      border: 1px solid #b8864e;
+      border-radius: 0.8rem;
+      padding: 0.5rem 0;
+      min-width: 140px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+    .nav-dropdown:hover .nav-dropdown-content {
+      display: block;
+    }
+    .nav-dropdown-content a {
+      display: block;
+      padding: 0.4rem 1rem;
+      border-radius: 0;
+      font-size: 0.85rem;
+    }
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid #b8864e;
+      color: #e3c78a;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.3rem 0.7rem;
+      border-radius: 0.5rem;
+      margin-left: auto;
+    }
+
+    @media (max-width: 900px) {
+      .nav-menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 0;
+      }
+      .nav-menu.open {
+        display: flex;
+      }
+      .nav-toggle {
+        display: block;
+      }
+      .nav-inner {
+        flex-wrap: wrap;
+      }
+      .nav-separator {
+        display: none;
+      }
+      body {
+        padding-top: 60px;
+      }
+    }
+
+    /* ==================== 原有样式 ==================== */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: rgba(255, 250, 240, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 2.5rem;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 50px rgba(100, 70, 30, 0.2);
+      border: 1px solid #ddc7a2;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.6rem;
+      color: #4a2c1a;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-shadow: 2px 2px 0 rgba(200, 170, 110, 0.3);
+      word-break: break-word;
+    }
+    .sub-info {
+      text-align: center;
+      font-size: 1rem;
+      color: #5b4a32;
+      margin-bottom: 2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 2px dashed #c8aa7a;
+    }
+    .toc-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .constellation-card {
+      background: #f7efe0;
+      border: 1px solid #dbbc87;
+      border-radius: 2rem;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #5d3a1a;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 8px rgba(120, 80, 40, 0.1);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .constellation-card:hover {
+      background: #e7d5b7;
+      border-color: #b38b5b;
+      transform: translateY(-2px);
+    }
+    .ji-section {
+      margin-top: 2.2rem;
+    }
+    .ji-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #8b4513;
+      border-left: 10px solid #b8864e;
+      padding-left: 1.2rem;
+      margin: 2rem 0 1rem 0;
+      background: linear-gradient(to right, #f5e7d5, transparent);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      border-radius: 0 1rem 1rem 0;
+    }
+    .ji-title .collapse-icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s;
+      margin-right: 1rem;
+    }
+    .ji-title.collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+    .entry-list {
+      list-style: none;
+      padding-left: 0.5rem;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .entry-list.collapsed {
+      max-height: 0 !important;
+    }
+    .entry-item {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0.35rem 0.6rem;
+      margin-bottom: 0.3rem;
+      border-bottom: 1px dotted #dec29b;
+      transition: background 0.2s;
+      border-radius: 0.6rem;
+    }
+    .entry-item:hover {
+      background: #f4e5cf;
+    }
+    .clickable-entry {
+      cursor: pointer;
+      text-decoration: none;
+      color: #2e4a2b;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .clickable-entry:hover {
+      color: #1e3b1a;
+      text-decoration: underline;
+      text-decoration-color: #b4945a;
+      text-underline-offset: 4px;
+    }
+    .entry-title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #3b2a17;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .entry-page {
+      font-size: 0.9rem;
+      color: #6b4f32;
+      background: #efe0ca;
+      padding: 0.1rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: 0.8rem;
+    }
+    hr {
+      margin: 2.5rem 0 1rem;
+      border: 1px solid #d0b182;
+    }
+    .footer {
+      text-align: right;
+      font-size: 0.9rem;
+      color: #7b684c;
+      margin-top: 1.2rem;
+    }
+    .back-to-top {
+      position: fixed;
+      right: 2rem;
+      bottom: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #8b4513;
+      color: #fff;
+      border: 2px solid #dbbc87;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(100, 70, 40, 0.3);
+      z-index: 1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.3s;
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .search-box {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-box input {
+      width: 80%;
+      max-width: 500px;
+      padding: 0.6rem 1.5rem;
+      border: 2px solid #dbbc87;
+      border-radius: 2rem;
+      font-size: 1rem;
+      background: #fef9f0;
+      color: #3e2e1f;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .search-box input:focus {
+      border-color: #8b4513;
+    }
+    .no-result {
+      text-align: center;
+      color: #8b5a2b;
+      padding: 1rem;
+      display: none;
+      font-size: 1.1rem;
+    }
+    .entry-item.hidden {
+      display: none;
+    }
+    .ji-section.hidden-section {
+      display: none;
+    }
+    .entry-count {
+      font-size: 0.7em;
+      color: #8b5a2b;
+      font-weight: normal;
+      margin-left: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 0;
+        padding-top: 60px;
+      }
+      .container {
+        padding: 1.5rem 1rem;
+        border-radius: 1.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .entry-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .entry-page {
+        margin-left: 0;
+        margin-top: 0.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== 顶部导航栏 ==================== -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="../道藏全书目录.html" class="nav-brand" title="道藏全书首页">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="11" fill="none" stroke="#fff" stroke-width="2"/>
+          <path d="M12 1 A11 11 0 0 1 12 23 A5.5 5.5 0 0 1 12 12 A5.5 5.5 0 0 0 12 1" fill="#fff"/>
+          <circle cx="12" cy="7.5" r="2" fill="#4a2c1a"/>
+          <circle cx="12" cy="16.5" r="2" fill="#fff"/>
+        </svg>
+      </div>
+      <span class="nav-title">道藏全书</span>
+    </a>
+
+    <button class="nav-toggle" onclick="toggleNavMenu()" aria-label="菜单">☰</button>
+
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="../道藏全书目录.html" title="首页">📚 首页</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../正统道藏/0正统道藏目录.html" title="正统道藏">正统道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../藏外道书/0藏外道书目录.html" title="藏外道书">藏外道书</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../道藏辑要/0道藏辑要目录.html" title="道藏辑要">道藏辑要</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../敦煌道藏/0敦煌道藏目录.html" title="敦煌道藏">敦煌道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../中华道藏/0中华道藏目录.html"  title="中华道藏">中华道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="0中华续道藏目录.html" class="active" title="中华续道藏">中华续道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../庄林续道藏/0庄林续道藏目录.html" title="庄林续道藏">庄林续道藏</a></li>
+      <!-- 
+      ==================== 扩展菜单项位置 ====================
+      如需添加更多菜单项，请按以下格式添加：
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="你的链接.html" title="标题">显示名称</a></li>
+      ==================== 扩展菜单项位置结束 ==================== 
+      -->
+    </ul>
+  </div>
+</nav>
+
+<div class="container" id="top">
+  <h1>中华续道藏目录浏览器</h1>
+  <div class="sub-info">
+    <p>点击经名在新标签页打开PDF · 共36册 ·  肆意传播售卖自承因果</p>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索经名..." oninput="filterEntries()">
+  </div>
+  <div class="no-result" id="noResult">未找到匹配的经文</div>
+
+  <div class="toc-grid" id="quickNav"></div>
+  <div id="dynamic-toc"></div>
+
+  <hr>
+  <div class="footer">中华续道藏目录 ·  肆意传播售卖自承因果</div>
+</div>
+
+<button class="back-to-top" id="backToTop" title="回到顶部">▲</button>
+
+<script>
+(function() {
+  // ==================== 导航菜单交互 ====================
+  window.toggleNavMenu = function() {
+    const menu = document.getElementById('navMenu');
+    menu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('navMenu');
+    const toggle = document.querySelector('.nav-toggle');
+    if (menu.classList.contains('open') && !e.target.closest('.nav-menu') && !e.target.closest('.nav-toggle')) {
+      menu.classList.remove('open');
+    }
+  });
+
+  // 获取当前HTML文件所在目录路径 (用于file协议)
+  function getBasePath() {
+    let basePath = '';
+    if (window.location.protocol === 'file:') {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      if (lastSlash !== -1) {
+        basePath = path.substring(0, lastSlash + 1);
+      }
+    }
+    return basePath;
+  }
+  const basePath = getBasePath();
+  // ---------- 中华续道藏数据 (已应用偏移量，页面值为真实PDF页码) ----------
+  const daozangData = [
+    {"file": "01-01序、凡例、目录.pdf", "id": "zx01-01", "name": "序、凡例、目录", "offset": 0, "entries": [{"title": "序、凡例、目录", "page": 1}]},
+    {"file": "01-02太上老君实录.pdf", "id": "zx01-02", "name": "太上老君实录", "offset": 0, "entries": [{"title": "太上老君实录", "page": 1}]},
+    {"file": "01-03神仙传.pdf", "id": "zx01-03", "name": "神仙传", "offset": 0, "entries": [{"title": "神仙传", "page": 1}]},
+    {"file": "01-04列仙全传.pdf", "id": "zx01-04", "name": "列仙全传", "offset": 0, "entries": [{"title": "列仙全传", "page": 1}]},
+    {"file": "01-05广列仙传.pdf", "id": "zx01-05", "name": "广列仙传", "offset": 0, "entries": [{"title": "广列仙传", "page": 1}]},
+    {"file": "01-06历代神仙史.pdf", "id": "zx01-06", "name": "历代神仙史", "offset": 0, "entries": [{"title": "历代神仙史", "page": 1}]},
+    {"file": "01-07绘图历代神仙传.pdf", "id": "zx01-07", "name": "绘图历代神仙传", "offset": 0, "entries": [{"title": "绘图历代神仙传", "page": 1}]},
+    {"file": "01-08长春道教源流.pdf", "id": "zx01-08", "name": "长春道教源流", "offset": 0, "entries": [{"title": "长春道教源流", "page": 1}]},
+    {"file": "01-09白云仙表.pdf", "id": "zx01-09", "name": "白云仙表", "offset": 0, "entries": [{"title": "白云仙表", "page": 1}]},
+    {"file": "01-10觉云本支道统薪传.pdf", "id": "zx01-10", "name": "觉云本支道统薪传", "offset": 0, "entries": [{"title": "觉云本支道统薪传", "page": 1}]},
+    {"file": "02-01第二册解题、目录.pdf", "id": "zx02-01", "name": "第二册解题目录", "offset": 0, "entries": [{"title": "第二册解题、目录", "page": 1}]},
+    {"file": "02-02古今列仙通纪.pdf", "id": "zx02-02", "name": "古今列仙通纪", "offset": 0, "entries": [{"title": "古今列仙通纪", "page": 1}]},
+    {"file": "02-03五百灵官爵位姓氏总录.pdf", "id": "zx02-03", "name": "五百灵官爵位姓氏总录", "offset": 0, "entries": [{"title": "五百灵官爵位姓氏总录", "page": 1}]},
+    {"file": "03-01第三册解题、目录.pdf", "id": "zx03-01", "name": "第三册解题目录", "offset": 0, "entries": [{"title": "第三册解题、目录", "page": 1}]},
+    {"file": "03-02龙虎山志.pdf", "id": "zx03-02", "name": "龙虎山志", "offset": 0, "entries": [{"title": "龙虎山志", "page": 1}]},
+    {"file": "03-03重修龙虎山志.pdf", "id": "zx03-03", "name": "重修龙虎山志", "offset": 0, "entries": [{"title": "重修龙虎山志", "page": 1}]},
+    {"file": "03-04阁皂山志.pdf", "id": "zx03-04", "name": "阁皂山志", "offset": 0, "entries": [{"title": "阁皂山志", "page": 1}]},
+    {"file": "03-05茅山全志.pdf", "id": "zx03-05", "name": "茅山全志", "offset": 0, "entries": [{"title": "茅山全志", "page": 1}]},
+    {"file": "03-06穹窿山志.pdf", "id": "zx03-06", "name": "穹窿山志", "offset": 0, "entries": [{"title": "穹窿山志", "page": 1}]},
+    {"file": "03-07崂山志.pdf", "id": "zx03-07", "name": "崂山志", "offset": 0, "entries": [{"title": "崂山志", "page": 1}]},
+    {"file": "03-08青城山记.pdf", "id": "zx03-08", "name": "青城山记", "offset": 0, "entries": [{"title": "青城山记", "page": 1}]},
+    {"file": "03-09岷阳前后志.pdf", "id": "zx03-09", "name": "岷阳前后志", "offset": 0, "entries": [{"title": "岷阳前后志", "page": 1}]},
+    {"file": "04-01第四册解题、目录.pdf", "id": "zx04-01", "name": "第四册解题目录", "offset": 0, "entries": [{"title": "第四册解题、目录", "page": 1}]},
+    {"file": "04-02逍遥山万寿宫通志.pdf", "id": "zx04-02", "name": "逍遥山万寿宫通志", "offset": 0, "entries": [{"title": "逍遥山万寿宫通志", "page": 1}]},
+    {"file": "04-03大岳太和山志.pdf", "id": "zx04-03", "name": "大岳太和山志", "offset": 0, "entries": [{"title": "大岳太和山志", "page": 1}]},
+    {"file": "04-04武当嘉庆图.pdf", "id": "zx04-04", "name": "武当嘉庆图", "offset": 0, "entries": [{"title": "武当嘉庆图", "page": 1}]},
+    {"file": "04-05华岳志.pdf", "id": "zx04-05", "name": "华岳志", "offset": 0, "entries": [{"title": "华岳志", "page": 1}]},
+    {"file": "04-06重阳庵集.pdf", "id": "zx04-06", "name": "重阳庵集", "offset": 0, "entries": [{"title": "重阳庵集", "page": 1}]},
+    {"file": "05-01第五册解题、目录.pdf", "id": "zx05-01", "name": "第五册解题目录", "offset": 0, "entries": [{"title": "第五册解题、目录", "page": 1}]},
+    {"file": "05-02罗浮志.pdf", "id": "zx05-02", "name": "罗浮志", "offset": 0, "entries": [{"title": "罗浮志", "page": 1}]},
+    {"file": "05-03罗浮山志会编.pdf", "id": "zx05-03", "name": "罗浮山志会编", "offset": 0, "entries": [{"title": "罗浮山志会编", "page": 1}]},
+    {"file": "05-04浮山志.pdf", "id": "zx05-04", "name": "浮山志", "offset": 0, "entries": [{"title": "浮山志", "page": 1}]},
+    {"file": "05-05罗浮志补.pdf", "id": "zx05-05", "name": "罗浮志补", "offset": 0, "entries": [{"title": "罗浮志补", "page": 1}]},
+    {"file": "05-06金鼓洞志.pdf", "id": "zx05-06", "name": "金鼓洞志", "offset": 0, "entries": [{"title": "金鼓洞志", "page": 1}]},
+    {"file": "05-07城北天后宫志.pdf", "id": "zx05-07", "name": "城北天后宫志", "offset": 0, "entries": [{"title": "城北天后宫志", "page": 1}]},
+    {"file": "06-01第六册解题、目录.pdf", "id": "zx06-01", "name": "第六册解题目录", "offset": 0, "entries": [{"title": "第六册解题、目录", "page": 1}]},
+    {"file": "06-02武夷山志.pdf", "id": "zx06-02", "name": "武夷山志", "offset": 0, "entries": [{"title": "武夷山志", "page": 1}]},
+    {"file": "06-03武林玄妙观志.pdf", "id": "zx06-03", "name": "武林玄妙观志", "offset": 0, "entries": [{"title": "武林玄妙观志", "page": 1}]},
+    {"file": "06-04玄妙观志.pdf", "id": "zx06-04", "name": "玄妙观志", "offset": 0, "entries": [{"title": "玄妙观志", "page": 1}]},
+    {"file": "06-05长春观志.pdf", "id": "zx06-05", "name": "长春观志", "offset": 0, "entries": [{"title": "长春观志", "page": 1}]},
+    {"file": "06-06天下名山记.pdf", "id": "zx06-06", "name": "天下名山记", "offset": 0, "entries": [{"title": "天下名山记", "page": 1}]},
+    {"file": "07-01第七册解题、目录.pdf", "id": "zx07-01", "name": "第七册解题目录", "offset": 0, "entries": [{"title": "第七册解题、目录", "page": 1}]},
+    {"file": "07-02纂图互注老子道德经.pdf", "id": "zx07-02", "name": "纂图互注老子道德经", "offset": 0, "entries": [{"title": "纂图互注老子道德经", "page": 1}]},
+    {"file": "07-03纂图附释文重言互注老子道德经.pdf", "id": "zx07-03", "name": "纂图附释文重言互注老子道德经", "offset": 0, "entries": [{"title": "纂图附释文重言互注老子道德经", "page": 1}]},
+    {"file": "07-04道德经解.pdf", "id": "zx07-04", "name": "道德经解", "offset": 0, "entries": [{"title": "道德经解", "page": 1}]},
+    {"file": "07-05道德经释义.pdf", "id": "zx07-05", "name": "道德经释义", "offset": 0, "entries": [{"title": "道德经释义", "page": 1}]},
+    {"file": "07-06道德经注释.pdf", "id": "zx07-06", "name": "道德经注释", "offset": 0, "entries": [{"title": "道德经注释", "page": 1}]},
+    {"file": "07-07道德经解.pdf", "id": "zx07-07", "name": "道德经解", "offset": 0, "entries": [{"title": "道德经解", "page": 1}]},
+    {"file": "07-08道德经解.pdf", "id": "zx07-08", "name": "道德经解", "offset": 0, "entries": [{"title": "道德经解", "page": 1}]},
+    {"file": "07-09孚佑帝君浅注道德经.pdf", "id": "zx07-09", "name": "孚佑帝君浅注道德经", "offset": 0, "entries": [{"title": "孚佑帝君浅注道德经", "page": 1}]},
+    {"file": "07-10太上道德经解.pdf", "id": "zx07-10", "name": "太上道德经解", "offset": 0, "entries": [{"title": "太上道德经解", "page": 1}]},
+    {"file": "07-11苏子由道德经注.pdf", "id": "zx07-11", "name": "苏子由道德经注", "offset": 0, "entries": [{"title": "苏子由道德经注", "page": 1}]},
+    {"file": "07-12道德宝章.pdf", "id": "zx07-12", "name": "道德宝章", "offset": 0, "entries": [{"title": "道德宝章", "page": 1}]},
+    {"file": "07-13老子道德经古本集注.pdf", "id": "zx07-13", "name": "老子道德经古本集注", "offset": 0, "entries": [{"title": "老子道德经古本集注", "page": 1}]},
+    {"file": "07-14老子道德经评点.pdf", "id": "zx07-14", "name": "老子道德经评点", "offset": 0, "entries": [{"title": "老子道德经评点", "page": 1}]},
+    {"file": "07-15太上老子道德经.pdf", "id": "zx07-15", "name": "太上老子道德经", "offset": 0, "entries": [{"title": "太上老子道德经", "page": 1}]},
+    {"file": "07-16道德经转语.pdf", "id": "zx07-16", "name": "道德经转语", "offset": 0, "entries": [{"title": "道德经转语", "page": 1}]},
+    {"file": "08-01第八册解题、目录.pdf", "id": "zx08-01", "name": "第八册解题目录", "offset": 0, "entries": [{"title": "第八册解题、目录", "page": 1}]},
+    {"file": "08-02老子集解.pdf", "id": "zx08-02", "name": "老子集解", "offset": 0, "entries": [{"title": "老子集解", "page": 1}]},
+    {"file": "08-03老子通义.pdf", "id": "zx08-03", "name": "老子通义", "offset": 0, "entries": [{"title": "老子通义", "page": 1}]},
+    {"file": "08-04老子解.pdf", "id": "zx08-04", "name": "老子解", "offset": 0, "entries": [{"title": "老子解", "page": 1}]},
+    {"file": "08-05老子道德经参补.pdf", "id": "zx08-05", "name": "老子道德经参补", "offset": 0, "entries": [{"title": "老子道德经参补", "page": 1}]},
+    {"file": "08-06老子翼.pdf", "id": "zx08-06", "name": "老子翼", "offset": 0, "entries": [{"title": "老子翼", "page": 1}]},
+    {"file": "08-07新刊太上老子道德经注解评林.pdf", "id": "zx08-07", "name": "新刊太上老子道德经注解评林", "offset": 0, "entries": [{"title": "新刊太上老子道德经注解评林", "page": 1}]},
+    {"file": "08-08老子通.pdf", "id": "zx08-08", "name": "老子通", "offset": 0, "entries": [{"title": "老子通", "page": 1}]},
+    {"file": "08-09道德经释辞.pdf", "id": "zx08-09", "name": "道德经释辞", "offset": 0, "entries": [{"title": "道德经释辞", "page": 1}]},
+    {"file": "08-10道德经评注.pdf", "id": "zx08-10", "name": "道德经评注", "offset": 0, "entries": [{"title": "道德经评注", "page": 1}]},
+    {"file": "08-11道德经精解.pdf", "id": "zx08-11", "name": "道德经精解", "offset": 0, "entries": [{"title": "道德经精解", "page": 1}]},
+    {"file": "08-12解老.pdf", "id": "zx08-12", "name": "解老", "offset": 0, "entries": [{"title": "解老", "page": 1}]},
+    {"file": "08-13老子道德真经.pdf", "id": "zx08-13", "name": "老子道德真经", "offset": 0, "entries": [{"title": "老子道德真经", "page": 1}]},
+    {"file": "08-14道德经测.pdf", "id": "zx08-14", "name": "道德经测", "offset": 0, "entries": [{"title": "道德经测", "page": 1}]},
+    {"file": "08-15老子或问.pdf", "id": "zx08-15", "name": "老子或问", "offset": 0, "entries": [{"title": "老子或问", "page": 1}]},
+    {"file": "08-16道德经集注.pdf", "id": "zx08-16", "name": "道德经集注", "offset": 0, "entries": [{"title": "道德经集注", "page": 1}]},
+    {"file": "08-17太上道德宝章翼.pdf", "id": "zx08-17", "name": "太上道德宝章翼", "offset": 0, "entries": [{"title": "太上道德宝章翼", "page": 1}]},
+    {"file": "09-01第九册解题、目录.pdf", "id": "zx09-01", "name": "第九册解题目录", "offset": 0, "entries": [{"title": "第九册解题、目录", "page": 1}]},
+    {"file": "09-02御制道德经.pdf", "id": "zx09-02", "name": "御制道德经", "offset": 0, "entries": [{"title": "御制道德经", "page": 1}]},
+    {"file": "09-03老子衍.pdf", "id": "zx09-03", "name": "老子衍", "offset": 0, "entries": [{"title": "老子衍", "page": 1}]},
+    {"file": "09-04道德经参补注释.pdf", "id": "zx09-04", "name": "道德经参补注释", "offset": 0, "entries": [{"title": "道德经参补注释", "page": 1}]},
+    {"file": "09-05太上道德经讲义.pdf", "id": "zx09-05", "name": "太上道德经讲义", "offset": 0, "entries": [{"title": "太上道德经讲义", "page": 1}]},
+    {"file": "09-06道德眼.pdf", "id": "zx09-06", "name": "道德眼", "offset": 0, "entries": [{"title": "道德眼", "page": 1}]},
+    {"file": "09-07道德经注.pdf", "id": "zx09-07", "name": "道德经注", "offset": 0, "entries": [{"title": "道德经注", "page": 1}]},
+    {"file": "09-08老子元翼.pdf", "id": "zx09-08", "name": "老子元翼", "offset": 0, "entries": [{"title": "老子元翼", "page": 1}]},
+    {"file": "09-09道德经编注.pdf", "id": "zx09-09", "name": "道德经编注", "offset": 0, "entries": [{"title": "道德经编注", "page": 1}]},
+    {"file": "09-10道德悬解.pdf", "id": "zx09-10", "name": "道德悬解", "offset": 0, "entries": [{"title": "道德悬解", "page": 1}]},
+    {"file": "09-11道德经辑注.pdf", "id": "zx09-11", "name": "道德经辑注", "offset": 0, "entries": [{"title": "道德经辑注", "page": 1}]},
+    {"file": "09-12道德经纂述.pdf", "id": "zx09-12", "name": "道德经纂述", "offset": 0, "entries": [{"title": "道德经纂述", "page": 1}]},
+    {"file": "09-13老子参注.pdf", "id": "zx09-13", "name": "老子参注", "offset": 0, "entries": [{"title": "老子参注", "page": 1}]},
+    {"file": "09-14老子说略.pdf", "id": "zx09-14", "name": "老子说略", "offset": 0, "entries": [{"title": "老子说略", "page": 1}]},
+    {"file": "09-15道德经注.pdf", "id": "zx09-15", "name": "道德经注", "offset": 0, "entries": [{"title": "道德经注", "page": 1}]},
+    {"file": "10-01第十册解题、目录.pdf", "id": "zx10-01", "name": "第十册解题目录", "offset": 0, "entries": [{"title": "第十册解题、目录", "page": 1}]},
+    {"file": "10-02老子章义.pdf", "id": "zx10-02", "name": "老子章义", "offset": 0, "entries": [{"title": "老子章义", "page": 1}]},
+    {"file": "10-03老子本义.pdf", "id": "zx10-03", "name": "老子本义", "offset": 0, "entries": [{"title": "老子本义", "page": 1}]},
+    {"file": "10-04老子解.pdf", "id": "zx10-04", "name": "老子解", "offset": 0, "entries": [{"title": "老子解", "page": 1}]},
+    {"file": "10-05老子注.pdf", "id": "zx10-05", "name": "老子注", "offset": 0, "entries": [{"title": "老子注", "page": 1}]},
+    {"file": "10-06道德经精义.pdf", "id": "zx10-06", "name": "道德经精义", "offset": 0, "entries": [{"title": "道德经精义", "page": 1}]},
+    {"file": "10-07道德经述义.pdf", "id": "zx10-07", "name": "道德经述义", "offset": 0, "entries": [{"title": "道德经述义", "page": 1}]},
+    {"file": "10-08道德经经问.pdf", "id": "zx10-08", "name": "道德经经问", "offset": 0, "entries": [{"title": "道德经经问", "page": 1}]},
+    {"file": "10-09道德经证.pdf", "id": "zx10-09", "name": "道德经证", "offset": 0, "entries": [{"title": "道德经证", "page": 1}]},
+    {"file": "10-10老子约.pdf", "id": "zx10-10", "name": "老子约", "offset": 0, "entries": [{"title": "老子约", "page": 1}]},
+    {"file": "10-11道德经达诂.pdf", "id": "zx10-11", "name": "道德经达诂", "offset": 0, "entries": [{"title": "道德经达诂", "page": 1}]},
+    {"file": "10-12道德经述义.pdf", "id": "zx10-12", "name": "道德经述义", "offset": 0, "entries": [{"title": "道德经述义", "page": 1}]},
+    {"file": "10-13老解老.pdf", "id": "zx10-13", "name": "老解老", "offset": 0, "entries": [{"title": "老解老", "page": 1}]},
+    {"file": "10-14老子衍.pdf", "id": "zx10-14", "name": "老子衍", "offset": 0, "entries": [{"title": "老子衍", "page": 1}]},
+    {"file": "10-15老子玄玄解.pdf", "id": "zx10-15", "name": "老子玄玄解", "offset": 0, "entries": [{"title": "老子玄玄解", "page": 1}]},
+    {"file": "10-16老子道德经笺注.pdf", "id": "zx10-16", "name": "老子道德经笺注", "offset": 0, "entries": [{"title": "老子道德经笺注", "page": 1}]},
+    {"file": "10-17老子道德经评点.pdf", "id": "zx10-17", "name": "老子道德经评点", "offset": 0, "entries": [{"title": "老子道德经评点", "page": 1}]},
+    {"file": "10-18补过斋读老子日记.pdf", "id": "zx10-18", "name": "补过斋读老子日记", "offset": 0, "entries": [{"title": "补过斋读老子日记", "page": 1}]},
+    {"file": "11-01第十一册解题、目录.pdf", "id": "zx11-01", "name": "第十一册解题目录", "offset": 0, "entries": [{"title": "第十一册解题、目录", "page": 1}]},
+    {"file": "11-02庄子南华真经点校.pdf", "id": "zx11-02", "name": "庄子南华真经点校", "offset": 0, "entries": [{"title": "庄子南华真经点校", "page": 1}]},
+    {"file": "11-03庄子鬳斋口义补注.pdf", "id": "zx11-03", "name": "庄子鬳斋口义补注", "offset": 0, "entries": [{"title": "庄子鬳斋口义补注", "page": 1}]},
+    {"file": "11-04南华真经副墨.pdf", "id": "zx11-04", "name": "南华真经副墨", "offset": 0, "entries": [{"title": "南华真经副墨", "page": 1}]},
+    {"file": "11-05南华真经评注.pdf", "id": "zx11-05", "name": "南华真经评注", "offset": 0, "entries": [{"title": "南华真经评注", "page": 1}]},
+    {"file": "12-01第十二册解题、目录.pdf", "id": "zx12-01", "name": "第十二册解题目录", "offset": 0, "entries": [{"title": "第十二册解题、目录", "page": 1}]},
+    {"file": "12-02南华真经大意解悬参注.pdf", "id": "zx12-02", "name": "南华真经大意解悬参注", "offset": 0, "entries": [{"title": "南华真经大意解悬参注", "page": 1}]},
+    {"file": "12-03庄子通义.pdf", "id": "zx12-03", "name": "庄子通义", "offset": 0, "entries": [{"title": "庄子通义", "page": 1}]},
+    {"file": "12-04庄子通.pdf", "id": "zx12-04", "name": "庄子通", "offset": 0, "entries": [{"title": "庄子通", "page": 1}]},
+    {"file": "12-05南华经因然.pdf", "id": "zx12-05", "name": "南华经因然", "offset": 0, "entries": [{"title": "南华经因然", "page": 1}]},
+    {"file": "13-01第十三册解题、目录.pdf", "id": "zx13-01", "name": "第十三册解题目录", "offset": 0, "entries": [{"title": "第十三册解题、目录", "page": 1}]},
+    {"file": "13-02南华真经精解.pdf", "id": "zx13-02", "name": "南华真经精解", "offset": 0, "entries": [{"title": "南华真经精解", "page": 1}]},
+    {"file": "13-03南华日抄.pdf", "id": "zx13-03", "name": "南华日抄", "offset": 0, "entries": [{"title": "南华日抄", "page": 1}]},
+    {"file": "13-04南华本义.pdf", "id": "zx13-04", "name": "南华本义", "offset": 0, "entries": [{"title": "南华本义", "page": 1}]},
+    {"file": "13-05南华本义附录.pdf", "id": "zx13-05", "name": "南华本义附录", "offset": 0, "entries": [{"title": "南华本义附录", "page": 1}]},
+    {"file": "13-06南华经集注.pdf", "id": "zx13-06", "name": "南华经集注", "offset": 0, "entries": [{"title": "南华经集注", "page": 1}]},
+    {"file": "14-01第十四册解题、目录.pdf", "id": "zx14-01", "name": "第十四册解题目录", "offset": 0, "entries": [{"title": "第十四册解题、目录", "page": 1}]},
+    {"file": "14-02南华真经注疏.pdf", "id": "zx14-02", "name": "南华真经注疏", "offset": 0, "entries": [{"title": "南华真经注疏", "page": 1}]},
+    {"file": "14-03解庄.pdf", "id": "zx14-03", "name": "解庄", "offset": 0, "entries": [{"title": "解庄", "page": 1}]},
+    {"file": "14-04庄子解.pdf", "id": "zx14-04", "name": "庄子解", "offset": 0, "entries": [{"title": "庄子解", "page": 1}]},
+    {"file": "14-05药地炮庄.pdf", "id": "zx14-05", "name": "药地炮庄", "offset": 0, "entries": [{"title": "药地炮庄", "page": 1}]},
+    {"file": "14-06庄子解.pdf", "id": "zx14-06", "name": "庄子解", "offset": 0, "entries": [{"title": "庄子解", "page": 1}]},
+    {"file": "14-07庄子通.pdf", "id": "zx14-07", "name": "庄子通", "offset": 0, "entries": [{"title": "庄子通", "page": 1}]},
+    {"file": "14-08庄子解.pdf", "id": "zx14-08", "name": "庄子解", "offset": 0, "entries": [{"title": "庄子解", "page": 1}]},
+    {"file": "15-01第十五册解题、目录.pdf", "id": "zx15-01", "name": "第十五册解题目录", "offset": 0, "entries": [{"title": "第十五册解题、目录", "page": 1}]},
+    {"file": "15-02南华简钞.pdf", "id": "zx15-02", "name": "南华简钞", "offset": 0, "entries": [{"title": "南华简钞", "page": 1}]},
+    {"file": "15-03庄子独见.pdf", "id": "zx15-03", "name": "庄子独见", "offset": 0, "entries": [{"title": "庄子独见", "page": 1}]},
+    {"file": "15-04南华本义.pdf", "id": "zx15-04", "name": "南华本义", "offset": 0, "entries": [{"title": "南华本义", "page": 1}]},
+    {"file": "15-05庄子因.pdf", "id": "zx15-05", "name": "庄子因", "offset": 0, "entries": [{"title": "庄子因", "page": 1}]},
+    {"file": "15-06南华通.pdf", "id": "zx15-06", "name": "南华通", "offset": 0, "entries": [{"title": "南华通", "page": 1}]},
+    {"file": "15-07庄子雪.pdf", "id": "zx15-07", "name": "庄子雪", "offset": 0, "entries": [{"title": "庄子雪", "page": 1}]},
+    {"file": "15-08南华通.pdf", "id": "zx15-08", "name": "南华通", "offset": 0, "entries": [{"title": "南华通", "page": 1}]},
+    {"file": "15-09南华经解.pdf", "id": "zx15-09", "name": "南华经解", "offset": 0, "entries": [{"title": "南华经解", "page": 1}]},
+    {"file": "16-01第十六册解题、目录.pdf", "id": "zx16-01", "name": "第十六册解题目录", "offset": 0, "entries": [{"title": "第十六册解题、目录", "page": 1}]},
+    {"file": "16-02南华真经影史.pdf", "id": "zx16-02", "name": "南华真经影史", "offset": 0, "entries": [{"title": "南华真经影史", "page": 1}]},
+    {"file": "16-03南华真经正义.pdf", "id": "zx16-03", "name": "南华真经正义", "offset": 0, "entries": [{"title": "南华真经正义", "page": 1}]},
+    {"file": "16-04南华雪心编.pdf", "id": "zx16-04", "name": "南华雪心编", "offset": 0, "entries": [{"title": "南华雪心编", "page": 1}]},
+    {"file": "16-05庄子集释.pdf", "id": "zx16-05", "name": "庄子集释", "offset": 0, "entries": [{"title": "庄子集释", "page": 1}]},
+    {"file": "17-01第十七册解题、目录.pdf", "id": "zx17-01", "name": "第十七册解题目录", "offset": 0, "entries": [{"title": "第十七册解题、目录", "page": 1}]},
+    {"file": "17-02庄子集解.pdf", "id": "zx17-02", "name": "庄子集解", "offset": 0, "entries": [{"title": "庄子集解", "page": 1}]},
+    {"file": "17-03庄子评点.pdf", "id": "zx17-03", "name": "庄子评点", "offset": 0, "entries": [{"title": "庄子评点", "page": 1}]},
+    {"file": "17-04列子冲虚真经评点.pdf", "id": "zx17-04", "name": "列子冲虚真经评点", "offset": 0, "entries": [{"title": "列子冲虚真经评点", "page": 1}]},
+    {"file": "17-05列子通义.pdf", "id": "zx17-05", "name": "列子通义", "offset": 0, "entries": [{"title": "列子通义", "page": 1}]},
+    {"file": "17-06列子冲虚真经评.pdf", "id": "zx17-06", "name": "列子冲虚真经评", "offset": 0, "entries": [{"title": "列子冲虚真经评", "page": 1}]},
+    {"file": "17-07亢仓子注.pdf", "id": "zx17-07", "name": "亢仓子注", "offset": 0, "entries": [{"title": "亢仓子注", "page": 1}]},
+    {"file": "17-08广成子疏略.pdf", "id": "zx17-08", "name": "广成子疏略", "offset": 0, "entries": [{"title": "广成子疏略", "page": 1}]},
+    {"file": "17-09阴符经解.pdf", "id": "zx17-09", "name": "阴符经解", "offset": 0, "entries": [{"title": "阴符经解", "page": 1}]},
+    {"file": "17-10黄帝阴符经注解.pdf", "id": "zx17-10", "name": "黄帝阴符经注解", "offset": 0, "entries": [{"title": "黄帝阴符经注解", "page": 1}]},
+    {"file": "17-11阴符经疏略.pdf", "id": "zx17-11", "name": "阴符经疏略", "offset": 0, "entries": [{"title": "阴符经疏略", "page": 1}]},
+    {"file": "17-12黄帝阴符经解.pdf", "id": "zx17-12", "name": "黄帝阴符经解", "offset": 0, "entries": [{"title": "黄帝阴符经解", "page": 1}]},
+    {"file": "17-13阴符经注.pdf", "id": "zx17-13", "name": "阴符经注", "offset": 0, "entries": [{"title": "阴符经注", "page": 1}]},
+    {"file": "17-14阴符经注.pdf", "id": "zx17-14", "name": "阴符经注", "offset": 0, "entries": [{"title": "阴符经注", "page": 1}]},
+    {"file": "17-15阴符玄解.pdf", "id": "zx17-15", "name": "阴符玄解", "offset": 0, "entries": [{"title": "阴符玄解", "page": 1}]},
+    {"file": "17-16黄帝阴符经注.pdf", "id": "zx17-16", "name": "黄帝阴符经注", "offset": 0, "entries": [{"title": "黄帝阴符经注", "page": 1}]},
+    {"file": "17-17阴符经真诠.pdf", "id": "zx17-17", "name": "阴符经真诠", "offset": 0, "entries": [{"title": "阴符经真诠", "page": 1}]},
+    {"file": "17-18补过斋读阴符经日记.pdf", "id": "zx17-18", "name": "补过斋读阴符经日记", "offset": 0, "entries": [{"title": "补过斋读阴符经日记", "page": 1}]},
+    {"file": "17-19太上老君说常清静真经.pdf", "id": "zx17-19", "name": "太上老君说常清静真经", "offset": 0, "entries": [{"title": "太上老君说常清静真经", "page": 1}]},
+    {"file": "17-20清静经原旨.pdf", "id": "zx17-20", "name": "清静经原旨", "offset": 0, "entries": [{"title": "清静经原旨", "page": 1}]},
+    {"file": "17-21清静经图注.pdf", "id": "zx17-21", "name": "清静经图注", "offset": 0, "entries": [{"title": "清静经图注", "page": 1}]},
+    {"file": "17-22九皇斗姥戒杀延生真经.pdf", "id": "zx17-22", "name": "九皇斗姥戒杀延生真经", "offset": 0, "entries": [{"title": "九皇斗姥戒杀延生真经", "page": 1}]},
+    {"file": "17-23太上十三经.pdf", "id": "zx17-23", "name": "太上十三经", "offset": 0, "entries": [{"title": "太上十三经", "page": 1}]},
+    {"file": "17-24元始上帝毗卢遮耶说大洞救劫尊经.pdf", "id": "zx17-24", "name": "元始上帝毗卢遮耶说大洞救劫尊经", "offset": 0, "entries": [{"title": "元始上帝毗卢遮耶说大洞救劫尊经", "page": 1}]},
+    {"file": "17-25太上道德大天尊说道元一气经.pdf", "id": "zx17-25", "name": "太上道德大天尊说道元一气经", "offset": 0, "entries": [{"title": "太上道德大天尊说道元一气经", "page": 1}]},
+    {"file": "17-26太上洞玄灵宝紫微金格高上玉皇本行集经阐微.pdf", "id": "zx17-26", "name": "太上洞玄灵宝紫微金格高上玉皇本行集经阐微", "offset": 0, "entries": [{"title": "太上洞玄灵宝紫微金格高上玉皇本行集经阐微", "page": 1}]},
+    {"file": "17-27高上玉皇心印妙经.pdf", "id": "zx17-27", "name": "高上玉皇心印妙经", "offset": 0, "entries": [{"title": "高上玉皇心印妙经", "page": 1}]},
+    {"file": "17-28终南八祖说心印妙经解.pdf", "id": "zx17-28", "name": "终南八祖说心印妙经解", "offset": 0, "entries": [{"title": "终南八祖说心印妙经解", "page": 1}]},
+    {"file": "17-29高上玉皇心印经.pdf", "id": "zx17-29", "name": "高上玉皇心印经", "offset": 0, "entries": [{"title": "高上玉皇心印经", "page": 1}]},
+    {"file": "17-30玉皇心印经注.pdf", "id": "zx17-30", "name": "玉皇心印经注", "offset": 0, "entries": [{"title": "玉皇心印经注", "page": 1}]},
+    {"file": "18-01第十八册解题、目录.pdf", "id": "zx18-01", "name": "第十八册解题目录", "offset": 0, "entries": [{"title": "第十八册解题、目录", "page": 1}]},
+    {"file": "18-02清微三品真经.pdf", "id": "zx18-02", "name": "清微三品真经", "offset": 0, "entries": [{"title": "清微三品真经", "page": 1}]},
+    {"file": "18-03吕注北斗九皇丹经.pdf", "id": "zx18-03", "name": "吕注北斗九皇丹经", "offset": 0, "entries": [{"title": "吕注北斗九皇丹经", "page": 1}]},
+    {"file": "18-04太上无极大道三十六部尊经.pdf", "id": "zx18-04", "name": "太上无极大道三十六部尊经", "offset": 0, "entries": [{"title": "太上无极大道三十六部尊经", "page": 1}]},
+    {"file": "18-05灵妙真经疏解.pdf", "id": "zx18-05", "name": "灵妙真经疏解", "offset": 0, "entries": [{"title": "灵妙真经疏解", "page": 1}]},
+    {"file": "18-06九皇新经注解.pdf", "id": "zx18-06", "name": "九皇新经注解", "offset": 0, "entries": [{"title": "九皇新经注解", "page": 1}]},
+    {"file": "18-07玄宗正旨.pdf", "id": "zx18-07", "name": "玄宗正旨", "offset": 0, "entries": [{"title": "玄宗正旨", "page": 1}]},
+    {"file": "18-08玉枢宝经.pdf", "id": "zx18-08", "name": "玉枢宝经", "offset": 0, "entries": [{"title": "玉枢宝经", "page": 1}]},
+    {"file": "18-09十六品经.pdf", "id": "zx18-09", "name": "十六品经", "offset": 0, "entries": [{"title": "十六品经", "page": 1}]},
+    {"file": "18-10金华宗旨.pdf", "id": "zx18-10", "name": "金华宗旨", "offset": 0, "entries": [{"title": "金华宗旨", "page": 1}]},
+    {"file": "18-11同参经.pdf", "id": "zx18-11", "name": "同参经", "offset": 0, "entries": [{"title": "同参经", "page": 1}]},
+    {"file": "18-12五经合编.pdf", "id": "zx18-12", "name": "五经合编", "offset": 0, "entries": [{"title": "五经合编", "page": 1}]},
+    {"file": "18-13易说.pdf", "id": "zx18-13", "name": "易说", "offset": 0, "entries": [{"title": "易说", "page": 1}]},
+    {"file": "18-14圣迹纪要.pdf", "id": "zx18-14", "name": "圣迹纪要", "offset": 0, "entries": [{"title": "圣迹纪要", "page": 1}]},
+    {"file": "18-15东园语录.pdf", "id": "zx18-15", "name": "东园语录", "offset": 0, "entries": [{"title": "东园语录", "page": 1}]},
+    {"file": "18-16语录大观.pdf", "id": "zx18-16", "name": "语录大观", "offset": 0, "entries": [{"title": "语录大观", "page": 1}]},
+    {"file": "18-17易说补遗.pdf", "id": "zx18-17", "name": "易说补遗", "offset": 0, "entries": [{"title": "易说补遗", "page": 1}]},
+    {"file": "19-01第十九册解题、目录.pdf", "id": "zx19-01", "name": "第十九册解题目录", "offset": 0, "entries": [{"title": "第十九册解题、目录", "page": 1}]},
+    {"file": "19-02吕帝文集.pdf", "id": "zx19-02", "name": "吕帝文集", "offset": 0, "entries": [{"title": "吕帝文集", "page": 1}]},
+    {"file": "19-03吕帝诗集.pdf", "id": "zx19-03", "name": "吕帝诗集", "offset": 0, "entries": [{"title": "吕帝诗集", "page": 1}]},
+    {"file": "19-04吕祖编年诗集.pdf", "id": "zx19-04", "name": "吕祖编年诗集", "offset": 0, "entries": [{"title": "吕祖编年诗集", "page": 1}]},
+    {"file": "19-05吕祖年谱海山奇遇仙迹.pdf", "id": "zx19-05", "name": "吕祖年谱海山奇遇仙迹", "offset": 0, "entries": [{"title": "吕祖年谱海山奇遇仙迹", "page": 1}]},
+    {"file": "19-06吕祖全书.pdf", "id": "zx19-06", "name": "吕祖全书", "offset": 0, "entries": [{"title": "吕祖全书", "page": 1}]},
+    {"file": "19-07吕祖汇集.pdf", "id": "zx19-07", "name": "吕祖汇集", "offset": 0, "entries": [{"title": "吕祖汇集", "page": 1}]},
+    {"file": "20-01第二十册解题、目录.pdf", "id": "zx20-01", "name": "第二十册解题目录", "offset": 0, "entries": [{"title": "第二十册解题、目录", "page": 1}]},
+    {"file": "20-02吕祖全书.pdf", "id": "zx20-02", "name": "吕祖全书", "offset": 0, "entries": [{"title": "吕祖全书", "page": 1}]}
+  ];
+
+  const container = document.getElementById('dynamic-toc');
+  const quickNav = document.getElementById('quickNav');
+
+  function buildTOC() {
+    let html = '';
+    let navHtml = '';
+    for (let i = 0; i < daozangData.length; i++) {
+      const ji = daozangData[i];
+      navHtml += `<span class="constellation-card" onclick="scrollToSection('${ji.id}')">${ji.name}</span>`;
+      html += `<div class="ji-section" id="${ji.id}">`;
+      html += `<div class="ji-title" onclick="toggleSection('${ji.id}')">`;
+      html += `<span>${ji.name} <small class="entry-count">(${ji.entries.length}条  )</small></span>`;
+      html += `<span class="collapse-icon">▼</span></div>`;
+      html += `<ul class="entry-list" id="list-${ji.id}" style="max-height: 40000px;">`;
+      for (let j = 0; j < ji.entries.length; j++) {
+        const e = ji.entries[j];
+        const realPage = e.page + ji.offset;
+        html += `<li class="entry-item" data-search="${e.title.toLowerCase()}">`;
+        html += `<span class="clickable-entry" onclick="openPDF('${ji.file}', ${realPage})" title="打开 ${ji.file} 第${realPage}页（原始${e.page} ）">`;
+        html += `<span class="entry-title">${e.title}</span>`;
+        html += `<span class="entry-page">📄 ${e.page}</span>`;
+        html += `</span></li>`;
+      }
+      html += `</ul></div>`;
+    }
+    quickNav.innerHTML = navHtml;
+    container.innerHTML = html;
+  }
+
+  window.openPDF = function(fileName, realPageNumber) {
+    const url = basePath + fileName + '#page=' + realPageNumber;
+    window.open(url, '_blank');
+  };
+
+  window.toggleSection = function(id) {
+    const list = document.getElementById('list-' + id);
+    const title = document.getElementById(id).querySelector('.ji-title');
+    if (list.classList.contains('collapsed')) {
+      list.classList.remove('collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      title.classList.remove('collapsed');
+    } else {
+      list.style.maxHeight = list.scrollHeight + 'px';
+      requestAnimationFrame(() => {
+        list.classList.add('collapsed');
+        list.style.maxHeight = '0px';
+        title.classList.add('collapsed');
+      });
+    }
+  };
+
+  window.scrollToSection = function(id) {
+    const navHeight = document.querySelector('.top-nav').offsetHeight;
+    const el = document.getElementById(id);
+    if (el) {
+      const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navHeight - 20;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      el.style.transition = 'background 0.5s';
+      el.style.background = '#f5e7d5';
+      setTimeout(() => { el.style.background = ''; }, 1500);
+    }
+  };
+
+  window.filterEntries = function() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const noResult = document.getElementById('noResult');
+    let foundAny = false;
+    for (let i = 0; i < daozangData.length; i++) {
+      const ji = daozangData[i];
+      const section = document.getElementById(ji.id);
+      const list = document.getElementById('list-' + ji.id);
+      let sectionVisible = false;
+      for (let j = 0; j < ji.entries.length; j++) {
+        const item = list.children[j];
+        if (!item) continue;
+        if (query === '' || ji.entries[j].title.toLowerCase().includes(query)) {
+          item.classList.remove('hidden');
+          sectionVisible = true;
+          if (query !== '') foundAny = true;
+        } else {
+          item.classList.add('hidden');
+        }
+      }
+      section.classList.toggle('hidden-section', !sectionVisible && query !== '');
+      if (query === '') {
+        list.classList.remove('collapsed');
+        list.style.maxHeight = '40000px';
+        section.querySelector('.ji-title').classList.remove('collapsed');
+      }
+    }
+    noResult.style.display = (!foundAny && query !== '') ? 'block' : 'none';
+  };
+
+  const backBtn = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    backBtn.classList.toggle('show', window.scrollY > 400);
+  });
+  backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  buildTOC();
+})();
+</script>
+</body>
+</html>

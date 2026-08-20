@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>庄林续道藏目录浏览器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #f5efe0;
+      font-family: "Microsoft YaHei", "微软雅黑", "SimSun", "宋体", "Noto Serif SC", serif;
+      color: #3e2e1f;
+      padding: 0;
+      line-height: 2.2;
+      padding-top: 80px;
+    }
+
+    /* ==================== 顶部导航栏 ==================== */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      background: linear-gradient(135deg, #4a2c1a 0%, #5d3a1a 50%, #4a2c1a 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border-bottom: 2px solid #b8864e;
+    }
+    .nav-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1.5rem;
+      flex-wrap: wrap;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 0.3rem 0;
+    }
+    .nav-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #d4a84b 0%, #b8864e 50%, #8b6914 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 2px solid #e3c78a;
+      flex-shrink: 0;
+    }
+    .nav-logo svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+    .nav-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e3c78a;
+      letter-spacing: 3px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 0.3rem 0;
+    }
+    .nav-menu li {
+      position: relative;
+    }
+    .nav-menu a {
+      display: block;
+      padding: 0.4rem 0.9rem;
+      color: #e3d5b8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 1.5rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      letter-spacing: 1px;
+      border: 1px solid transparent;
+    }
+    .nav-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(227, 199, 138, 0.4);
+    }
+    .nav-menu a.active {
+      background: #b8864e;
+      color: #fff;
+      border-color: #d4a84b;
+      font-weight: bold;
+    }
+    .nav-separator {
+      color: #8b6b4a;
+      font-size: 0.8rem;
+      margin: 0 0.1rem;
+      user-select: none;
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4a2c1a;
+      border: 1px solid #b8864e;
+      border-radius: 0.8rem;
+      padding: 0.5rem 0;
+      min-width: 140px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+    .nav-dropdown:hover .nav-dropdown-content {
+      display: block;
+    }
+    .nav-dropdown-content a {
+      display: block;
+      padding: 0.4rem 1rem;
+      border-radius: 0;
+      font-size: 0.85rem;
+    }
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid #b8864e;
+      color: #e3c78a;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.3rem 0.7rem;
+      border-radius: 0.5rem;
+      margin-left: auto;
+    }
+
+    @media (max-width: 900px) {
+      .nav-menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 0;
+      }
+      .nav-menu.open {
+        display: flex;
+      }
+      .nav-toggle {
+        display: block;
+      }
+      .nav-inner {
+        flex-wrap: wrap;
+      }
+      .nav-separator {
+        display: none;
+      }
+      body {
+        padding-top: 60px;
+      }
+    }
+
+    /* ==================== 原有样式 ==================== */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: rgba(255, 250, 240, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 2.5rem;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 50px rgba(100, 70, 30, 0.2);
+      border: 1px solid #ddc7a2;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.6rem;
+      color: #4a2c1a;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-shadow: 2px 2px 0 rgba(200, 170, 110, 0.3);
+      word-break: break-word;
+    }
+    .sub-info {
+      text-align: center;
+      font-size: 1rem;
+      color: #5b4a32;
+      margin-bottom: 2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 2px dashed #c8aa7a;
+    }
+    .toc-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .constellation-card {
+      background: #f7efe0;
+      border: 1px solid #dbbc87;
+      border-radius: 2rem;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #5d3a1a;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 8px rgba(120, 80, 40, 0.1);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .constellation-card:hover {
+      background: #e7d5b7;
+      border-color: #b38b5b;
+      transform: translateY(-2px);
+    }
+    .ji-section {
+      margin-top: 2.2rem;
+    }
+    .ji-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #8b4513;
+      border-left: 10px solid #b8864e;
+      padding-left: 1.2rem;
+      margin: 2rem 0 1rem 0;
+      background: linear-gradient(to right, #f5e7d5, transparent);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      border-radius: 0 1rem 1rem 0;
+    }
+    .ji-title .collapse-icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s;
+      margin-right: 1rem;
+    }
+    .ji-title.collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+    .entry-list {
+      list-style: none;
+      padding-left: 0.5rem;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .entry-list.collapsed {
+      max-height: 0 !important;
+    }
+    .entry-item {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0.35rem 0.6rem;
+      margin-bottom: 0.3rem;
+      border-bottom: 1px dotted #dec29b;
+      transition: background 0.2s;
+      border-radius: 0.6rem;
+    }
+    .entry-item:hover {
+      background: #f4e5cf;
+    }
+    .clickable-entry {
+      cursor: pointer;
+      text-decoration: none;
+      color: #2e4a2b;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .clickable-entry:hover {
+      color: #1e3b1a;
+      text-decoration: underline;
+      text-decoration-color: #b4945a;
+      text-underline-offset: 4px;
+    }
+    .entry-title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #3b2a17;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .entry-page {
+      font-size: 0.9rem;
+      color: #6b4f32;
+      background: #efe0ca;
+      padding: 0.1rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: 0.8rem;
+    }
+    hr {
+      margin: 2.5rem 0 1rem;
+      border: 1px solid #d0b182;
+    }
+    .footer {
+      text-align: right;
+      font-size: 0.9rem;
+      color: #7b684c;
+      margin-top: 1.2rem;
+    }
+    .back-to-top {
+      position: fixed;
+      right: 2rem;
+      bottom: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #8b4513;
+      color: #fff;
+      border: 2px solid #dbbc87;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(100, 70, 40, 0.3);
+      z-index: 1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.3s;
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .search-box {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-box input {
+      width: 80%;
+      max-width: 500px;
+      padding: 0.6rem 1.5rem;
+      border: 2px solid #dbbc87;
+      border-radius: 2rem;
+      font-size: 1rem;
+      background: #fef9f0;
+      color: #3e2e1f;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .search-box input:focus {
+      border-color: #8b4513;
+    }
+    .no-result {
+      text-align: center;
+      color: #8b5a2b;
+      padding: 1rem;
+      display: none;
+      font-size: 1.1rem;
+    }
+    .entry-item.hidden {
+      display: none;
+    }
+    .ji-section.hidden-section {
+      display: none;
+    }
+    .entry-count {
+      font-size: 0.7em;
+      color: #8b5a2b;
+      font-weight: normal;
+      margin-left: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 0;
+        padding-top: 60px;
+      }
+      .container {
+        padding: 1.5rem 1rem;
+        border-radius: 1.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .entry-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .entry-page {
+        margin-left: 0;
+        margin-top: 0.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== 顶部导航栏 ==================== -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="../道藏全书目录.html" class="nav-brand" title="道藏全书首页">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="11" fill="none" stroke="#fff" stroke-width="2"/>
+          <path d="M12 1 A11 11 0 0 1 12 23 A5.5 5.5 0 0 1 12 12 A5.5 5.5 0 0 0 12 1" fill="#fff"/>
+          <circle cx="12" cy="7.5" r="2" fill="#4a2c1a"/>
+          <circle cx="12" cy="16.5" r="2" fill="#fff"/>
+        </svg>
+      </div>
+      <span class="nav-title">道藏全书</span>
+    </a>
+
+    <button class="nav-toggle" onclick="toggleNavMenu()" aria-label="菜单">☰</button>
+
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="../道藏全书目录.html" title="首页">📚 首页</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../正统道藏/0正统道藏目录.html" title="正统道藏">正统道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../藏外道书/0藏外道书目录.html" title="藏外道书">藏外道书</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../道藏辑要/0道藏辑要目录.html" title="道藏辑要">道藏辑要</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../敦煌道藏/0敦煌道藏目录.html" title="敦煌道藏">敦煌道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../中华道藏/0中华道藏目录.html"  title="中华道藏">中华道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../中华续道藏/0中华续道藏目录.html" title="中华续道藏">中华续道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="0庄林续道藏目录.html" class="active" title="庄林续道藏">庄林续道藏</a></li>
+      <!-- 
+      ==================== 扩展菜单项位置 ====================
+      如需添加更多菜单项，请按以下格式添加：
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="你的链接.html" title="标题">显示名称</a></li>
+      ==================== 扩展菜单项位置结束 ==================== 
+      -->
+    </ul>
+  </div>
+</nav>
+
+<div class="container" id="top">
+  <h1>庄林续道藏目录浏览器</h1>
+  <div class="sub-info">
+    <p>点击经名在新标签页打开PDF · 共36册 ·  肆意传播售卖自承因果</p>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索经名..." oninput="filterEntries()">
+  </div>
+  <div class="no-result" id="noResult">未找到匹配的经文</div>
+
+  <div class="toc-grid" id="quickNav"></div>
+  <div id="dynamic-toc"></div>
+
+  <hr>
+  <div class="footer">庄林续道藏目录 ·  肆意传播售卖自承因果</div>
+</div>
+
+<button class="back-to-top" id="backToTop" title="回到顶部">▲</button>
+
+<script>
+(function() {
+  // ==================== 导航菜单交互 ====================
+  window.toggleNavMenu = function() {
+    const menu = document.getElementById('navMenu');
+    menu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('navMenu');
+    const toggle = document.querySelector('.nav-toggle');
+    if (menu.classList.contains('open') && !e.target.closest('.nav-menu') && !e.target.closest('.nav-toggle')) {
+      menu.classList.remove('open');
+    }
+  });
+
+  // 获取当前HTML文件所在目录路径 (用于file协议)
+  function getBasePath() {
+    let basePath = '';
+    if (window.location.protocol === 'file:') {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      if (lastSlash !== -1) {
+        basePath = path.substring(0, lastSlash + 1);
+      }
+    }
+    return basePath;
+  }
+  const basePath = getBasePath();
+  // ---------- 庄林续道藏数据 (已应用偏移量，页面值为真实PDF页码) ----------
+  var daozangData = [
+  {
+    "file": "庄林续道藏1.pdf",
+    "id": "bk01",
+    "name": "庄林续道藏1",
+    "offset": 9,
+    "entries": [
+      {
+        "title": "卷一·百神灯科",
+        "page": 1
+      },
+      {
+        "title": "卷二·发奏灯斋科仪",
+        "page": 33
+      },
+      {
+        "title": "卷三·开光科仪",
+        "page": 119
+      },
+      {
+        "title": "卷四·祝圣科仪",
+        "page": 151
+      },
+      {
+        "title": "卷五·禁坛玄科",
+        "page": 209
+      },
+      {
+        "title": "卷六·玉枢宝经科",
+        "page": 257
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏2.pdf",
+    "id": "bk02",
+    "name": "庄林续道藏2",
+    "offset": -340,
+    "entries": [
+      {
+        "title": "卷七·午供—九陈供科仪",
+        "page": 341
+      },
+      {
+        "title": "卷八·午供—什供养献供文",
+        "page": 383
+      },
+      {
+        "title": "卷九·午供—正一玄坛午供科文·科仪",
+        "page": 403
+      },
+      {
+        "title": "卷十·朝天宝忏卷一",
+        "page": 479
+      },
+      {
+        "title": "卷十一·朝天女忏卷二",
+        "page": 551
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏3.pdf",
+    "id": "bk03",
+    "name": "庄林续道藏3",
+    "offset": -637,
+    "entries": [
+      {
+        "title": "卷十二·朝天宝忏卷三",
+        "page": 639
+      },
+      {
+        "title": "卷十三·朝天宝忏卷四",
+        "page": 709
+      },
+      {
+        "title": "卷十四·朝天宝忏卷五",
+        "page": 795
+      },
+      {
+        "title": "卷十五·朝天宝忏卷六",
+        "page": 869
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏4.pdf",
+    "id": "bk04",
+    "name": "庄林续道藏4",
+    "offset": -939,
+    "entries": [
+      {
+        "title": "卷十六·朝天宝忏卷七",
+        "page": 941
+      },
+      {
+        "title": "卷十七·朝天宝忏卷八",
+        "page": 1021
+      },
+      {
+        "title": "卷十八·朝天宝忏卷九",
+        "page": 1093
+      },
+      {
+        "title": "卷十九·朝天宝忏卷十",
+        "page": 1173
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏5.pdf",
+    "id": "bk05",
+    "name": "庄林续道藏5",
+    "offset": -1257,
+    "entries": [
+      {
+        "title": "卷二十·宿启道场科·太上金箓宿启科范",
+        "page": 1259
+      },
+      {
+        "title": "卷廿一·正一嗣坛·正一平气宫法仍全卷",
+        "page": 1381
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏6.pdf",
+    "id": "bk06",
+    "name": "庄林续道藏6",
+    "offset": -1479,
+    "entries": [
+      {
+        "title": "卷廿二·早朝—启圣科仪",
+        "page": 1481
+      },
+      {
+        "title": "卷廿三·分灯科仪",
+        "page": 1629
+      },
+      {
+        "title": "卷廿四·卷廉科仪",
+        "page": 1663
+      },
+      {
+        "title": "卷廿五·振钟磬科仪",
+        "page": 1695
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏7.pdf",
+    "id": "bk07",
+    "name": "庄林续道藏7",
+    "offset": -1725,
+    "entries": [
+      {
+        "title": "卷廿六·三官经",
+        "page": 1727
+      },
+      {
+        "title": "卷廿七·三官大帝宝经",
+        "page": 1857
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏8.pdf",
+    "id": "bk08",
+    "name": "庄林续道藏8",
+    "offset": -2043,
+    "entries": [
+      {
+        "title": "卷廿八·三官宝忏—天部科仪",
+        "page": 2045
+      },
+      {
+        "title": "卷廿九·三官宝忏—地部科仪",
+        "page": 2125
+      },
+      {
+        "title": "卷卅·三官宝忏—水部科仪",
+        "page": 2173
+      },
+      {
+        "title": "卷卅一·午朝—启师科仪",
+        "page": 2223
+      },
+      {
+        "title": "卷卅二·太上东斗主算妙经",
+        "page": 2355
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏9.pdf",
+    "id": "bk09",
+    "name": "庄林续道藏9",
+    "offset": -2358,
+    "entries": [
+      {
+        "title": "卷卅三·太上西斗大计护身妙经",
+        "page": 2373
+      },
+      {
+        "title": "卷卅四·太上说南斗六司延寿度人妙经",
+        "page": 2399
+      },
+      {
+        "title": "卷三五·太上玄灵北斗本命延生妙经",
+        "page": 2417
+      },
+      {
+        "title": "卷卅六·中斗经",
+        "page": 2483
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏10.pdf",
+    "id": "bk10",
+    "name": "庄林续道藏10",
+    "offset": -2505,
+    "entries": [
+      {
+        "title": "卷卅七·高上玉皇本行集经卷上",
+        "page": 2507
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏11.pdf",
+    "id": "bk11",
+    "name": "庄林续道藏11",
+    "offset": -2721,
+    "entries": [
+      {
+        "title": "卷卅八·高上玉皇本行集经卷中",
+        "page": 2723
+      },
+      {
+        "title": "卷卅九·高上玉皇本行集经忏悔文",
+        "page": 2909
+      },
+      {
+        "title": "卷四十·朝天谢罪玉皇宝忏",
+        "page": 3105
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏12.pdf",
+    "id": "bk12",
+    "name": "庄林续道藏12",
+    "offset": -3189,
+    "entries": [
+      {
+        "title": "卷四一·晚朝—启圣科仪",
+        "page": 3191
+      },
+      {
+        "title": "卷四二·登台拜表科仪",
+        "page": 3323
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏13.pdf",
+    "id": "bk13",
+    "name": "庄林续道藏13",
+    "offset": -3435,
+    "entries": [
+      {
+        "title": "卷四三·九幽拔罪忏法卷一二",
+        "page": 3441
+      },
+      {
+        "title": "卷四四·九幽拔罪忏法卷三四",
+        "page": 3493
+      },
+      {
+        "title": "卷四五·九幽拔罪忏法卷五六",
+        "page": 3547
+      },
+      {
+        "title": "卷四六·九幽拔罪忏法卷七八",
+        "page": 3601
+      },
+      {
+        "title": "卷四七·九幽拔罪忏法卷九十",
+        "page": 3655
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏14.pdf",
+    "id": "bk14",
+    "name": "庄林续道藏14",
+    "offset": -3711,
+    "entries": [
+      {
+        "title": "卷四八·道场(正醮)灵宝祝香科仪",
+        "page": 3713
+      },
+      {
+        "title": "卷四九·道场法仪",
+        "page": 3831
+      },
+      {
+        "title": "卷五十·普度·登台说法普施科仪",
+        "page": 3877
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏15.pdf",
+    "id": "bk15",
+    "name": "庄林续道藏15",
+    "offset": -4049,
+    "entries": [
+      {
+        "title": "卷一·灵宝拔亡发表科仪",
+        "page": 4051
+      },
+      {
+        "title": "卷二·太上洞玄祝圣科仪",
+        "page": 4079
+      },
+      {
+        "title": "卷三·太上洞玄度人无量上品妙经",
+        "page": 4109
+      },
+      {
+        "title": "卷四·太上洞玄无量度人中品妙经",
+        "page": 4143
+      },
+      {
+        "title": "卷五·太上慈悲道场三元减罪忏法",
+        "page": 4171
+      },
+      {
+        "title": "卷六·灵宝颁赦科仪",
+        "page": 4269
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏16.pdf",
+    "id": "bk16",
+    "name": "庄林续道藏16",
+    "offset": -4325,
+    "entries": [
+      {
+        "title": "卷七·灵宝炼度宗旨全卷",
+        "page": 4327
+      },
+      {
+        "title": "卷八·炼度宗旨",
+        "page": 4467
+      },
+      {
+        "title": "卷九·灵宝拔度合符科仪",
+        "page": 4535
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏17.pdf",
+    "id": "bk17",
+    "name": "庄林续道藏17",
+    "offset": -4671,
+    "entries": [
+      {
+        "title": "卷十·灵宝拔度药师宝忏",
+        "page": 4673
+      },
+      {
+        "title": "卷十一·灵宝拔亡解指教擿科仪",
+        "page": 4743
+      },
+      {
+        "title": "卷十二·过桥科仪",
+        "page": 4821
+      },
+      {
+        "title": "几十三·请库科仪",
+        "page": 4841
+      },
+      {
+        "title": "卷十四·太乙救苦天尊说拔度血湖宝忏卷上",
+        "page": 4911
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏18.pdf",
+    "id": "bk18",
+    "name": "庄林续道藏18",
+    "offset": -4971,
+    "entries": [
+      {
+        "title": "卷十五·灵宝血湖宝忏卷中",
+        "page": 4973
+      },
+      {
+        "title": "卷十六·血湖宝忏卷下",
+        "page": 5011
+      },
+      {
+        "title": "卷十七·太上洞玄灵宝玉历血湖度命赦罪妙经",
+        "page": 5047
+      },
+      {
+        "title": "卷十八·沐浴科",
+        "page": 5103
+      },
+      {
+        "title": "卷十九·召魂沐浴给牒科",
+        "page": 5139
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏19.pdf",
+    "id": "bk19",
+    "name": "庄林续道藏19",
+    "offset": -5164,
+    "entries": [
+      {
+        "title": "卷一·吴氏文检",
+        "page": 5165
+      },
+      {
+        "title": "卷二·醮·丧式三五朝文检",
+        "page": 5359
+      },
+      {
+        "title": "卷三·正一嗣坛师传符咒诀",
+        "page": 5525
+      },
+      {
+        "title": "卷四·陈氏文检",
+        "page": 5531
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏20.pdf",
+    "id": "bk20",
+    "name": "庄林续道藏20",
+    "offset": -5669,
+    "entries": [
+      {
+        "title": "卷五·文检—祭花科仪",
+        "page": 5671
+      },
+      {
+        "title": "卷六·意文符咒",
+        "page": 5705
+      },
+      {
+        "title": "卷七·茅山咒诀",
+        "page": 5779
+      },
+      {
+        "title": "卷八·长同乐轩",
+        "page": 5837
+      },
+      {
+        "title": "卷九·设醮道场登台拜表玉诀科仪",
+        "page": 5901
+      },
+      {
+        "title": "卷十·金箓早年晚朝遣将召四灵科仪",
+        "page": 5947
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏21.pdf",
+    "id": "bk21",
+    "name": "庄林续道藏21",
+    "offset": -5951,
+    "entries": [
+      {
+        "title": "卷一·请夫人科(通灵坛记)",
+        "page": 5953
+      },
+      {
+        "title": "卷二·请夫人科(法应坛记)",
+        "page": 6031
+      },
+      {
+        "title": "卷三·起土开金井科仪·取星辰科·祈雨秒经",
+        "page": 6103
+      },
+      {
+        "title": "卷四·起土开金井科仪·入房科",
+        "page": 6169
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏22.pdf",
+    "id": "bk22",
+    "name": "庄林续道藏22",
+    "offset": -6185,
+    "entries": [
+      {
+        "title": "卷五·解连妙经(云妙坛)",
+        "page": 6187
+      },
+      {
+        "title": "卷六·解连妙经(抄本)",
+        "page": 6307
+      },
+      {
+        "title": "卷七·吾有祛秽真言神咒当持诵",
+        "page": 6343
+      },
+      {
+        "title": "卷八·表钱造席科仪",
+        "page": 6389
+      },
+      {
+        "title": "卷九·中文科·功德发表科仪",
+        "page": 3429
+      },
+      {
+        "title": "卷十·赏军科仪",
+        "page": 6481
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏23.pdf",
+    "id": "bk23",
+    "name": "庄林续道藏23",
+    "offset": -6503,
+    "entries": [
+      {
+        "title": "卷十一·新刻元龟会解断易神书卷下",
+        "page": 6505
+      },
+      {
+        "title": "卷十二·申状科仪",
+        "page": 6555
+      },
+      {
+        "title": "卷十三·造銭一段",
+        "page": 6573
+      },
+      {
+        "title": "卷十四·关胜帝君明圣真经",
+        "page": 6602
+      },
+      {
+        "title": "卷十五·拜斗经·三献科·进钱科",
+        "page": 6659
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏24.pdf",
+    "id": "bk24",
+    "name": "庄林续道藏24",
+    "offset": -6865,
+    "entries": [
+      {
+        "title": "舞十六·闾山秘诀",
+        "page": 6867
+      },
+      {
+        "title": "卷十七·唐山科仪·下席科·送神三献供",
+        "page": 6969
+      },
+      {
+        "title": "卷十八·神霄醮用科仪",
+        "page": 7059
+      },
+      {
+        "title": "卷十九·灵宝正一清晨启请玄科",
+        "page": 7099
+      },
+      {
+        "title": "卷二十·灵宝早朝科仪",
+        "page": 7141
+      }
+    ]
+  },
+  {
+    "file": "庄林续道藏25.pdf",
+    "id": "bk25",
+    "name": "庄林续道藏25",
+    "offset": -7173,
+    "entries": [
+      {
+        "title": "卷廿一·灵宝正壹午朝玉枢玄科",
+        "page": 7175
+      },
+      {
+        "title": "卷廿二·灵宝正壹晚科仪",
+        "page": 7269
+      },
+      {
+        "title": "卷廿三·太上灵宝正一宿朝玄科",
+        "page": 7317
+      },
+      {
+        "title": "卷廿四'送船科",
+        "page": 7387
+      },
+      {
+        "title": "卷廿五·元始天尊说洞渊辟瘟妙经",
+        "page": 7423
+      }
+    ]
+  }
+];
+
+
+
+
+  const container = document.getElementById('dynamic-toc');
+  const quickNav = document.getElementById('quickNav');
+
+  function buildTOC() {
+    let html = '';
+    let navHtml = '';
+    for (let i = 0; i < daozangData.length; i++) {
+      const ji = daozangData[i];
+      navHtml += `<span class="constellation-card" onclick="scrollToSection('${ji.id}')">${ji.name}</span>`;
+      html += `<div class="ji-section" id="${ji.id}">`;
+      html += `<div class="ji-title" onclick="toggleSection('${ji.id}')">`;
+      html += `<span>${ji.name} <small class="entry-count">(${ji.entries.length}条  )</small></span>`;
+      html += `<span class="collapse-icon">▼</span></div>`;
+      html += `<ul class="entry-list" id="list-${ji.id}" style="max-height: 40000px;">`;
+      for (let j = 0; j < ji.entries.length; j++) {
+        const e = ji.entries[j];
+        const realPage = e.page + ji.offset;
+        html += `<li class="entry-item" data-search="${e.title.toLowerCase()}">`;
+        html += `<span class="clickable-entry" onclick="openPDF('${ji.file}', ${realPage})" title="打开 ${ji.file} 第${realPage}页（原始${e.page} ）">`;
+        html += `<span class="entry-title">${e.title}</span>`;
+        html += `<span class="entry-page">📄 ${e.page}</span>`;
+        html += `</span></li>`;
+      }
+      html += `</ul></div>`;
+    }
+    quickNav.innerHTML = navHtml;
+    container.innerHTML = html;
+  }
+
+  window.openPDF = function(fileName, realPageNumber) {
+    const url = basePath + fileName + '#page=' + realPageNumber;
+    window.open(url, '_blank');
+  };
+
+  window.toggleSection = function(id) {
+    const list = document.getElementById('list-' + id);
+    const title = document.getElementById(id).querySelector('.ji-title');
+    if (list.classList.contains('collapsed')) {
+      list.classList.remove('collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      title.classList.remove('collapsed');
+    } else {
+      list.style.maxHeight = list.scrollHeight + 'px';
+      requestAnimationFrame(() => {
+        list.classList.add('collapsed');
+        list.style.maxHeight = '0px';
+        title.classList.add('collapsed');
+      });
+    }
+  };
+
+  window.scrollToSection = function(id) {
+    const navHeight = document.querySelector('.top-nav').offsetHeight;
+    const el = document.getElementById(id);
+    if (el) {
+      const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navHeight - 20;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      el.style.transition = 'background 0.5s';
+      el.style.background = '#f5e7d5';
+      setTimeout(() => { el.style.background = ''; }, 1500);
+    }
+  };
+
+  window.filterEntries = function() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const noResult = document.getElementById('noResult');
+    let foundAny = false;
+    for (let i = 0; i < daozangData.length; i++) {
+      const ji = daozangData[i];
+      const section = document.getElementById(ji.id);
+      const list = document.getElementById('list-' + ji.id);
+      let sectionVisible = false;
+      for (let j = 0; j < ji.entries.length; j++) {
+        const item = list.children[j];
+        if (!item) continue;
+        if (query === '' || ji.entries[j].title.toLowerCase().includes(query)) {
+          item.classList.remove('hidden');
+          sectionVisible = true;
+          if (query !== '') foundAny = true;
+        } else {
+          item.classList.add('hidden');
+        }
+      }
+      section.classList.toggle('hidden-section', !sectionVisible && query !== '');
+      if (query === '') {
+        list.classList.remove('collapsed');
+        list.style.maxHeight = '40000px';
+        section.querySelector('.ji-title').classList.remove('collapsed');
+      }
+    }
+    noResult.style.display = (!foundAny && query !== '') ? 'block' : 'none';
+  };
+
+  const backBtn = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    backBtn.classList.toggle('show', window.scrollY > 400);
+  });
+  backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  buildTOC();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>道藏辑要目录浏览器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #f5efe0;
+      font-family: "Microsoft YaHei", "微软雅黑", "SimSun", "宋体", "Noto Serif SC", serif;
+      color: #3e2e1f;
+      padding: 0;
+      line-height: 2.2;
+      padding-top: 80px;
+    }
+
+    /* ==================== 顶部导航栏 ==================== */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      background: linear-gradient(135deg, #4a2c1a 0%, #5d3a1a 50%, #4a2c1a 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border-bottom: 2px solid #b8864e;
+    }
+    .nav-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1.5rem;
+      flex-wrap: wrap;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 0.3rem 0;
+    }
+    .nav-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #d4a84b 0%, #b8864e 50%, #8b6914 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 2px solid #e3c78a;
+      flex-shrink: 0;
+    }
+    .nav-logo svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+    .nav-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e3c78a;
+      letter-spacing: 3px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 0.3rem 0;
+    }
+    .nav-menu li {
+      position: relative;
+    }
+    .nav-menu a {
+      display: block;
+      padding: 0.4rem 0.9rem;
+      color: #e3d5b8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 1.5rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      letter-spacing: 1px;
+      border: 1px solid transparent;
+    }
+    .nav-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(227, 199, 138, 0.4);
+    }
+    .nav-menu a.active {
+      background: #b8864e;
+      color: #fff;
+      border-color: #d4a84b;
+      font-weight: bold;
+    }
+    .nav-separator {
+      color: #8b6b4a;
+      font-size: 0.8rem;
+      margin: 0 0.1rem;
+      user-select: none;
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4a2c1a;
+      border: 1px solid #b8864e;
+      border-radius: 0.8rem;
+      padding: 0.5rem 0;
+      min-width: 140px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+    .nav-dropdown:hover .nav-dropdown-content {
+      display: block;
+    }
+    .nav-dropdown-content a {
+      display: block;
+      padding: 0.4rem 1rem;
+      border-radius: 0;
+      font-size: 0.85rem;
+    }
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid #b8864e;
+      color: #e3c78a;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.3rem 0.7rem;
+      border-radius: 0.5rem;
+      margin-left: auto;
+    }
+
+    @media (max-width: 900px) {
+      .nav-menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 0;
+      }
+      .nav-menu.open {
+        display: flex;
+      }
+      .nav-toggle {
+        display: block;
+      }
+      .nav-inner {
+        flex-wrap: wrap;
+      }
+      .nav-separator {
+        display: none;
+      }
+      body {
+        padding-top: 60px;
+      }
+    }
+
+    /* ==================== 原有样式 ==================== */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: rgba(255, 250, 240, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 2.5rem;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 50px rgba(100, 70, 30, 0.2);
+      border: 1px solid #ddc7a2;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.6rem;
+      color: #4a2c1a;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-shadow: 2px 2px 0 rgba(200, 170, 110, 0.3);
+      word-break: break-word;
+    }
+    .sub-info {
+      text-align: center;
+      font-size: 1rem;
+      color: #5b4a32;
+      margin-bottom: 2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 2px dashed #c8aa7a;
+    }
+    .toc-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .constellation-card {
+      background: #f7efe0;
+      border: 1px solid #dbbc87;
+      border-radius: 2rem;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #5d3a1a;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 8px rgba(120, 80, 40, 0.1);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .constellation-card:hover {
+      background: #e7d5b7;
+      border-color: #b38b5b;
+      transform: translateY(-2px);
+    }
+    .ji-section {
+      margin-top: 2.2rem;
+    }
+    .ji-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #8b4513;
+      border-left: 10px solid #b8864e;
+      padding-left: 1.2rem;
+      margin: 2rem 0 1rem 0;
+      background: linear-gradient(to right, #f5e7d5, transparent);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      border-radius: 0 1rem 1rem 0;
+    }
+    .ji-title .collapse-icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s;
+      margin-right: 1rem;
+    }
+    .ji-title.collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+    .entry-list {
+      list-style: none;
+      padding-left: 0.5rem;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .entry-list.collapsed {
+      max-height: 0 !important;
+    }
+    .entry-item {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0.35rem 0.6rem;
+      margin-bottom: 0.3rem;
+      border-bottom: 1px dotted #dec29b;
+      transition: background 0.2s;
+      border-radius: 0.6rem;
+    }
+    .entry-item:hover {
+      background: #f4e5cf;
+    }
+    .clickable-entry {
+      cursor: pointer;
+      text-decoration: none;
+      color: #2e4a2b;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .clickable-entry:hover {
+      color: #1e3b1a;
+      text-decoration: underline;
+      text-decoration-color: #b4945a;
+      text-underline-offset: 4px;
+    }
+    .entry-title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #3b2a17;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .entry-page {
+      font-size: 0.9rem;
+      color: #6b4f32;
+      background: #efe0ca;
+      padding: 0.1rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: 0.8rem;
+    }
+    hr {
+      margin: 2.5rem 0 1rem;
+      border: 1px solid #d0b182;
+    }
+    .footer {
+      text-align: right;
+      font-size: 0.9rem;
+      color: #7b684c;
+      margin-top: 1.2rem;
+    }
+    .back-to-top {
+      position: fixed;
+      right: 2rem;
+      bottom: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #8b4513;
+      color: #fff;
+      border: 2px solid #dbbc87;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(100, 70, 40, 0.3);
+      z-index: 1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.3s;
+    }
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .search-box {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-box input {
+      width: 80%;
+      max-width: 500px;
+      padding: 0.6rem 1.5rem;
+      border: 2px solid #dbbc87;
+      border-radius: 2rem;
+      font-size: 1rem;
+      background: #fef9f0;
+      color: #3e2e1f;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .search-box input:focus {
+      border-color: #8b4513;
+    }
+    .no-result {
+      text-align: center;
+      color: #8b5a2b;
+      padding: 1rem;
+      display: none;
+      font-size: 1.1rem;
+    }
+    .entry-item.hidden {
+      display: none;
+    }
+    .ji-section.hidden-section {
+      display: none;
+    }
+    .entry-count {
+      font-size: 0.7em;
+      color: #8b5a2b;
+      font-weight: normal;
+      margin-left: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 0;
+        padding-top: 60px;
+      }
+      .container {
+        padding: 1.5rem 1rem;
+        border-radius: 1.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .entry-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .entry-page {
+        margin-left: 0;
+        margin-top: 0.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== 顶部导航栏 ==================== -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="../道藏全书目录.html" class="nav-brand" title="道藏全书首页">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="11" fill="none" stroke="#fff" stroke-width="2"/>
+          <path d="M12 1 A11 11 0 0 1 12 23 A5.5 5.5 0 0 1 12 12 A5.5 5.5 0 0 0 12 1" fill="#fff"/>
+          <circle cx="12" cy="7.5" r="2" fill="#4a2c1a"/>
+          <circle cx="12" cy="16.5" r="2" fill="#fff"/>
+        </svg>
+      </div>
+      <span class="nav-title">道藏全书</span>
+    </a>
+
+    <button class="nav-toggle" onclick="toggleNavMenu()" aria-label="菜单">☰</button>
+
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="../道藏全书目录.html" title="首页">📚 首页</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../正统道藏/0正统道藏目录.html" title="正统道藏">正统道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../藏外道书/0藏外道书目录.html" title="藏外道书">藏外道书</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="0道藏辑要目录.html" class="active" title="道藏辑要">道藏辑要</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../敦煌道藏/0敦煌道藏目录.html" title="敦煌道藏">敦煌道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../中华道藏/0中华道藏目录.html"  title="中华道藏">中华道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../中华续道藏/0中华续道藏目录.html" title="中华续道藏">中华续道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="../庄林续道藏/0庄林续道藏目录.html" title="庄林续道藏">庄林续道藏</a></li>
+      <!-- 
+      ==================== 扩展菜单项位置 ====================
+      如需添加更多菜单项，请按以下格式添加：
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="你的链接.html" title="标题">显示名称</a></li>
+      ==================== 扩展菜单项位置结束 ==================== 
+      -->
+    </ul>
+  </div>
+</nav>
+
+<div class="container" id="top">
+  <h1>道藏辑要目录浏览器</h1>
+  <div class="sub-info">
+    <p>点击经名在新标签页打开PDF · 共36册 ·  肆意传播售卖自承因果</p>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索经名..." oninput="filterEntries()">
+  </div>
+  <div class="no-result" id="noResult">未找到匹配的经文</div>
+
+  <div class="toc-grid" id="quickNav"></div>
+  <div id="dynamic-toc"></div>
+
+  <hr>
+  <div class="footer">道藏辑要目录 ·  肆意传播售卖自承因果</div>
+</div>
+
+<button class="back-to-top" id="backToTop" title="回到顶部">▲</button>
+
+<script>
+(function() {
+  // ==================== 导航菜单交互 ====================
+  window.toggleNavMenu = function() {
+    const menu = document.getElementById('navMenu');
+    menu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('navMenu');
+    const toggle = document.querySelector('.nav-toggle');
+    if (menu.classList.contains('open') && !e.target.closest('.nav-menu') && !e.target.closest('.nav-toggle')) {
+      menu.classList.remove('open');
+    }
+  });
+
+  // 获取当前HTML文件所在目录路径 (用于file协议)
+  function getBasePath() {
+    let basePath = '';
+    if (window.location.protocol === 'file:') {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      if (lastSlash !== -1) {
+        basePath = path.substring(0, lastSlash + 1);
+      }
+    }
+    return basePath;
+  }
+  const basePath = getBasePath();
+  // ---------- 道藏辑要数据 (已应用偏移量，页面值为真实PDF页码) ----------
+  const daozangData =  [
+      {
+        file: "01重刊道藏辑要 角集.pdf",
+        id: "zh01",
+        name: "角集",
+        offset: 0,
+        entries: [
+          { title: "元始無量度人上品妙經", page: 1 },
+          { title: "1元始無量度人上品妙經", page: 5 },
+          { title: "2玉宸大道品", page: 18 },
+          { title: "3天地八維安鎮國祚品", page: 35 },
+          { title: "4永延劫運保世昇平品", page: 57 },
+          { title: "5消禳國君王候世上災祥品", page: 72 },
+          { title: "6太乙神變五福護國禳兵品", page: 98 },
+          { title: "7顯瑞符應品", page: 117 },
+          { title: "8清微金科品", page: 131 },
+          { title: "9禹餘玉律品", page: 146 },
+          { title: "10大赤靈文品", page: 165 },
+          { title: "11玉明運度品", page: 185 },
+          { title: "12陰陽化生品", page: 204 },
+          { title: "13太乙元精品", page: 221 },
+          { title: "14日精陽明品", page: 237 },
+          { title: "15月華陰景品", page: 254 },
+          { title: "16陰陽離合五行化體品", page: 271 },
+          { title: "17扶桑青陽品", page: 285 },
+          { title: "18素景曜靈品", page: 302 },
+          { title: "19十方聖境品", page: 318 },
+          { title: "20碧落空歌品", page: 332 },
+          { title: "21生化胎卵斷除邪穢品", page: 351 },
+          { title: "22飛神召靈品", page: 368 },
+          { title: "23降真召靈品", page: 382 },
+          { title: "24神變氣化品", page: 396 },
+          { title: "25赤符丹光品", page: 412 },
+          { title: "26明體貫氣品", page: 428 },
+          { title: "27紫光丹靈品", page: 445 },
+          { title: "28三辰光輝保命延生品", page: 461 },
+          { title: "29降真延壽品", page: 478 },
+          { title: "30斷絕胎根閉塞死戶品", page: 494 },
+          { title: "31長生久視品", page: 509 },
+          { title: "32五行順治品", page: 531 },
+          { title: "33五方正氣品", page: 550 },
+          { title: "34騰曜二景五星品", page: 568 },
+          { title: "35九宮仙籍品", page: 583 },
+        ]
+      },
+      {
+        file: "02重刊道藏辑要 亢集.pdf",
+        id: "zh02",
+        name: "亢集",
+        offset: 0,
+        entries: [
+          { title: "元始無量度人經卷", page: 1 },
+          { title: "36八景神合品", page: 1 },
+          { title: "37七星除祆品", page: 17 },
+          { title: "38神符除難品", page: 39 },
+          { title: "39南宮延生品", page: 56 },
+          { title: "40北都除殃品", page: 73 },
+          { title: "41五行備足生靈壽域品", page: 90 },
+          { title: "42祈求嗣續慶延門閥品", page: 105 },
+          { title: "43保胎護命品", page: 121 },
+          { title: "44洞神禳災品", page: 137 },
+          { title: "45解禳山谷瘴癘品", page: 156 },
+          { title: "46除禳水火漂焚品", page: 175 },
+          { title: "47祈禳水旱品", page: 193 },
+          { title: "48安鎮九壘土祆不祥品", page: 209 },
+          { title: "49消除病癘跛痾品", page: 224 },
+          { title: "50蠲化水火災癘品", page: 240 },
+          { title: "51消除疾疫保命延年品", page: 258 },
+          { title: "52玄明洞淵品", page: 274 },
+          { title: "53斬滅五行邪怪品", page: 290 },
+          { title: "54斬馘不祥品", page: 309 },
+          { title: "55追度上世亡魂品", page: 326 },
+          { title: "56濟度死魂品", page: 341 },
+          { title: "57解釋幽牢品", page: 357 },
+          { title: "58迴生起死品", page: 375 },
+          { title: "59化屍受形品", page: 391 },
+          { title: "60鍊氣變仙品", page: 408 },
+          { title: "61永斷輪轉品", page: 428 },
+          { title: "元始無量度人經註  上陽子陳觀吾註", page: 444 },
+          { title: "元始無量度人經集註  陳椿榮集注", page: 548 },
+        ]
+      },
+      {
+        file: "03重刊道藏辑要 氐集.pdf",
+        id: "zh03",
+        name: "氐集",
+        offset: 0,
+        entries: [
+          { title: "元始天尊說無上內秘真藏經", page: 1 },
+          { title: "元始天尊說先天道德經註解  宋李嘉謀息齋註解", page: 56 },
+          { title: "元始大洞玉經  文昌帝君傳本", page: 117 },
+          { title: "大乘妙林經", page: 402 },
+          { title: "太上昇玄說消災護命妙經註  脩江混然子註", page: 445 },
+          { title: "元始天尊說生天得道經", page: 453 },
+          { title: "元始天尊說得道了身經", page: 454 },
+          { title: "元始上帝說毘盧遮耶說大洞救劫尊經", page: 457 },
+          { title: "元始天尊說藥王救八十一難真經", page: 477 },
+          { title: "梓潼本願真經", page: 484 },
+          { title: "元始天尊說東嶽化物濟生拔罪保命妙經", page: 493 },
+          { title: "碧霞元君護國庇民普濟保生妙經", page: 502 },
+          { title: "太上大道玉清經", page: 507 },
+          { title: "太上中道妙法蓮華經", page: 720 },
+        ]
+      },
+      {
+        file: "04重刊道藏辑要 房集.pdf",
+        id: "zh04",
+        name: "房集",
+        offset: 0,
+        entries: [
+          { title: "洞玄靈寶自然九天生神章經解義  董思靖著", page: 1 },
+          { title: "太上洞玄靈寶救苦妙經  通神庵洞陽子註解", page: 221 },
+          { title: "洞玄靈寶八仙王教誡經", page: 242 },
+          { title: "太上洞玄靈寶國王行道經", page: 247 },
+          { title: "太上金匱玉境修真指玄妙經", page: 256 },
+          { title: "太上洞玄靈寶福日妙經", page: 281 },
+          { title: "太上靈寶天尊說禳災度厄經", page: 283 },
+          { title: "太上神咒延壽妙經", page: 284 },
+          { title: "太上洞淵說請雨龍王經", page: 285 },
+          { title: "太上洞玄寶元上經", page: 288 },
+          { title: "太上洞玄靈寶淨供妙經", page: 303 },
+          { title: "太上靈寶洪福滅罪像名經", page: 310 },
+          { title: "太上洞淵三昧帝心光明正印太極紫微伏魔制鬼拯救惡道集福吉祥神咒", page: 346 },
+          { title: "洞玄靈寶定觀經註  冷虛子", page: 350 },
+          { title: "太上洞玄靈寶開演秘密藏經", page: 357 },
+          { title: "洞玄靈寶諸天世界造化經", page: 368 },
+          { title: "太上洞玄靈寶十號功德因緣妙經", page: 379 },
+          { title: "太上洞玄靈寶真文要解上經  高玄大法師受", page: 387 },
+          { title: "太上洞玄靈寶業報因緣經", page: 400 },
+          { title: "太上洞玄靈寶出家因緣經", page: 410 },
+          { title: "太上洞玄靈寶法燭經", page: 424 },
+          { title: "太上洞玄靈寶智慧觀身經", page: 431 },
+        ]
+      },
+      {
+        file: "05重刊道藏辑要 心集.pdf",
+        id: "zh05",
+        name: "心集",
+        offset: 0,
+        entries: [
+          { title: "太上玄元道德經 八洞仙祖分章合注", page: 1 },
+          { title: "太上道德經四子古道集解 寇才質", page: 111 },
+          { title: "太上道德寶章翼 程以寧", page: 177 },
+          { title: "太上道德真經章句訓 張嗣成", page: 299 },
+          { title: "太上道德真經集註 彭耜", page: 335 },
+          { title: "道德真經集註釋文 彭耜", page: 640 },
+          { title: "太上道德真經集註雜說 彭耜", page: 657 },
+          { title: "道德經釋辭 王一清", page: 697 },
+          { title: "道德真經註 吳澄", page: 777 },
+        ]
+      },
+      {
+        file: "06重刊道藏辑要 尾集.pdf",
+        id: "zh06",
+        name: "尾集",
+        offset: 0,
+        entries: [
+          { title: "太上老君說常清靜經  八洞仙祖全註", page: 1 },
+          { title: "太上老君說常清靜經註  瑩蟾子李道純註", page: 7 },
+          { title: "太上道德大天尊說道元一氣經", page: 12 },
+          { title: "太清中黃真經釋題", page: 13 },
+          { title: "太清中黃真經  九仙君譔 中黃真人註", page: 14 },
+          { title: "太上赤交洞古經註  龜山長筌子註", page: 38 },
+          { title: "太上大通經註   李道純註", page: 43 },
+          { title: "太上老君內日用妙經", page: 46 },
+          { title: "太上老君外日用妙經", page: 47 },
+          { title: "老子說五廚經註  尹愔註", page: 48 },
+          { title: "太上老君內觀經", page: 54 },
+          { title: "太上老君說了心經", page: 59 },
+          { title: "太上內丹守一真定經  紫光天母傳", page: 60 },
+          { title: "太上說轉輪五道宿命因緣經", page: 61 },
+          { title: "太上老君內丹經", page: 67 },
+          { title: "太上妙始經", page: 69 },
+          { title: "太上浩源經", page: 74 },
+          { title: "太上無極大道自然真一五稱符經", page: 75 },
+          { title: "枕中經", page: 97 },
+          { title: "太清元道眞經", page: 98 },
+          { title: "太上老君太素經", page: 103 },
+          { title: "太上黃庭內景玉經", page: 105 },
+          { title: "黃庭經注 蔣國祚", page: 153 },
+          { title: "黃庭內景經", page: 156 },
+          { title: "黃庭外景經", page: 173 },
+          { title: "太上黃庭內景玉經 梁邱子注", page: 179 },
+          { title: "太上黃庭外景經", page: 202 },
+          { title: "太上黃庭中景經 李千乘注", page: 210 },
+          { title: "太上洞真賢門經", page: 235 },
+          { title: "太上感應篇", page: 296 },
+          { title: "太上感應篇箋註 惠棟", page: 304 },
+          { title: "太上感應篇集註", page: 359 },
+          { title: "猶龍傳  賈善翔編", page: 429 },
+          { title: "西昇經 宋徽宗注", page: 583 },
+          { title: "太上老君年譜要略  永嘉謝守灝編集 隱山李致道校正", page: 636 },
+          { title: "混元聖紀  謝守灝編", page: 646 },
+        ]
+      },
+      {
+        file: "07重刊道藏辑要 箕集.pdf",
+        id: "zh07",
+        name: "箕集",
+        offset: 0,
+        entries: [
+          { title: "玉皇本行集經 文昌帝君孚佑帝君合注", page: 1 },
+          { title: "高上玉皇本行集經 張良校正", page: 117 },
+          { title: "玉皇本行集經註解 臞仙撰", page: 209 },
+          { title: "本行集經闡微", page: 426 },
+          { title: "高上玉皇心印妙經 八祖合註", page: 600 },
+          { title: "玉皇心印妙經注 高時明", page: 624 },
+          { title: "胎息經註 幻眞先生", page: 635 },
+          { title: "玉皇宥罪錫福寶懺 辛漢臣著", page: 638 },
+          { title: "玉皇十七慈光燈儀", page: 656 },
+        ]
+      },
+      {
+        file: "08重刊道藏辑要 斗集.pdf",
+        id: "zh08",
+        name: "斗集",
+        offset: 0,
+        entries: [
+          { title: "先天斗帝敕演無上玄功靈妙真經孚佑上帝純陽呂祖天師疏解", page: 1 },
+          { title: "斗帝敕演九品靈妙真經疏解後跋", page: 24 },
+          { title: "九皇斗姥戒殺延生真經", page: 26 },
+          { title: "九皇斗姥說延生保命心咒", page: 28 },
+          { title: "九皇斗姥說戒殺延生真經", page: 29 },
+          { title: "觀音大士蓮船經敘", page: 66 },
+          { title: "清夫先天蓮船經敘", page: 68 },
+          { title: "關聖帝君窮理盡性至命上品說", page: 70 },
+          { title: "文昌帝君烹煉抽添火候中品說", page: 73 },
+          { title: "川主大帝大藥鼎爐金丹下品說", page: 75 },
+          { title: "觀音大士蓮船經", page: 77 },
+          { title: "洞真太上太霄琅書  紫微夫人譔", page: 91 },
+          { title: "高上神霄玉清真王紫書大法", page: 210 },
+          { title: "太上玄靈北斗本命延生真經", page: 344 },
+          { title: "太上說南斗延壽度人妙經", page: 352 },
+          { title: "太上說東斗主算護命妙經", page: 356 },
+          { title: "太上說西斗記名護身妙經", page: 358 },
+          { title: "太上說中斗大魁保命妙經", page: 361 },
+          { title: "太上玄靈北斗本命延生真經註解", page: 364 },
+          { title: "重刊九皇新經註解  呂純陽註", page: 432 },
+          { title: "玄宗正旨  呂純陽", page: 602 },
+          { title: "浮黎鼻祖金華秘訣  廣成子著 仙翁葛玄註", page: 626 },
+          { title: "金碧古文龍虎上經   王道註疏", page: 639 },
+          { title: "金碧古文龍虎上經玄解 彭好古", page: 696 },
+          { title: "唱道真言  清華老人", page: 715 },
+          { title: "黃帝陰符經十真集解", page: 806 },
+          { title: "黃帝陰符經 張果注 王道淵注", page: 828 },
+          { title: "黃帝陰符經 沈亞夫注", page: 859 },
+          { title: "黃帝陰符經 蒼厓氏注", page: 865 },
+          { title: "黃帝陰符經 元陽子頌", page: 871 },
+          { title: "陰符玄解 范宜賓註釋", page: 878 },
+          { title: "洞真太上三元流珠經", page: 894 },
+          { title: "長生胎元神用經  野人郞肇注", page: 901 },
+          { title: "洞真西王母寶神起居經", page: 915 },
+          { title: "洞真上清青要紫書金根眾經", page: 930 },
+          { title: "元始天王經", page: 948 },
+          { title: "七元真人說神真靈符經", page: 965 },
+          { title: "太上紫微中天七元真經", page: 977 },
+          { title: "中天紫微星真寶懺", page: 980 },
+          { title: "五百靈官爵位姓氏總錄", page: 986 },
+          { title: "玉樞寶經  呂祖讚解", page: 1000 },
+        ]
+      },
+      {
+        file: "09重刊道藏辑要 牛集.pdf",
+        id: "zh09",
+        name: "牛集",
+        offset: 0,
+        entries: [
+          { title: "南華真經注疏 郭象注 成玄英疏", page: 1 },
+          { title: "南華真經注序 郭象", page: 1 },
+          { title: "南華真經疏序 成玄英", page: 2 },
+          { title: "內篇-逍遙游第一", page: 4 },
+          { title: "內篇-齊物論第二", page: 33 },
+          { title: "內篇-養生主第三", page: 100 },
+          { title: "內篇-人間世第四", page: 114 },
+          { title: "內篇-德充符第五", page: 163 },
+          { title: "內篇-大宗師第六", page: 197 },
+          { title: "內篇-應帝王第七", page: 254 },
+          { title: "外篇-駢拇第八", page: 273 },
+          { title: "外篇-馬蹄第九", page: 291 },
+          { title: "外篇-胠篋第十", page: 300 },
+          { title: "外篇-在宥第十一", page: 317 },
+          { title: "外篇-天地第十二", page: 351 },
+          { title: "外篇-天道第十三", page: 399 },
+          { title: "外篇-天運第十四", page: 433 },
+          { title: "外篇-刻意第十五", page: 469 },
+          { title: "外篇-繕性第十六", page: 481 },
+          { title: "外篇-秋水第十七", page: 494 },
+          { title: "外篇-至樂第十八", page: 536 },
+          { title: "外篇-達生第十九", page: 552 },
+          { title: "外篇-山木第二十", page: 581 },
+          { title: "外篇-甲子方第廿一", page: 607 },
+          { title: "外篇-知北遊第廿二", page: 631 },
+          { title: "雜篇-庚桑楚第廿三", page: 666 },
+          { title: "雜篇-徐無鬼第廿四", page: 705 },
+          { title: "雜篇-則陽第廿五", page: 751 },
+          { title: "雜篇-外物第廿六", page: 789 },
+          { title: "雜篇-寓言第廿七", page: 810 },
+          { title: "雜篇-讓王第廿八", page: 826 },
+          { title: "雜篇-盜跖第廿九", page: 842 },
+          { title: "雜篇-說劍第三十", page: 862 },
+          { title: "雜篇-漁父第卅一", page: 867 },
+          { title: "雜篇-列御寇第卅二", page: 877 },
+          { title: "雜篇-天下方第卅三", page: 900 },
+          { title: "南華真經注疏  程以寧注疏", page: 940 },
+          { title: "南華真經注疏序 鄒忠允", page: 940 },
+          { title: "南華真經註疏自序 程以寧", page: 942 },
+          { title: "南華真經注疏題詞 汪伯修", page: 944 },
+          { title: "內篇-逍遙游第一", page: 945 },
+          { title: "內篇-齊物論第二", page: 955 },
+          { title: "內篇-養生主第三", page: 972 },
+          { title: "內篇-人間世第四", page: 978 },
+          { title: "內篇-德充符第五", page: 990 },
+          { title: "內篇-大宗師第六", page: 1001 },
+          { title: "內篇-應帝王第七", page: 1016 },
+          { title: "外篇-駢拇第八", page: 1023 },
+          { title: "外篇-馬蹄第九", page: 1030 },
+          { title: "外篇-胠篋第十", page: 1034 },
+          { title: "外篇-在宥第十一", page: 1041 },
+          { title: "外篇-天地第十二", page: 1055 },
+          { title: "外篇-天道第十三", page: 1075 },
+          { title: "外篇-天運第十四", page: 1088 },
+          { title: "外篇-刻意第十五", page: 1105 },
+          { title: "外篇-繕性第十六", page: 1109 },
+          { title: "外篇-秋水第十七", page: 1114 },
+          { title: "外篇-至樂第十八", page: 1129 },
+          { title: "外篇-達生第十九", page: 1138 },
+          { title: "外篇-山木第二十", page: 1152 },
+          { title: "外篇-甲子方第廿一", page: 1166 },
+          { title: "外篇-知北遊第廿二", page: 1179 },
+          { title: "雜篇-庚桑楚第廿三", page: 1195 },
+          { title: "雜篇-徐無鬼第廿四", page: 1212 },
+          { title: "雜篇-則陽第廿五", page: 1232 },
+          { title: "雜篇-外物第廿六", page: 1248 },
+          { title: "雜篇-寓言第廿七", page: 1258 },
+          { title: "雜篇-讓王第廿八", page: 1265 },
+          { title: "雜篇-盜跖第廿九", page: 1278 },
+          { title: "雜篇-說劍第三十", page: 1291 },
+          { title: "雜篇-漁父第卅一", page: 1295 },
+          { title: "雜篇-列御寇第卅二", page: 1302 },
+          { title: "雜篇-天下方第卅三", page: 1312 },
+          { title: "南華眞經註疏傳神集後序", page: 1326 },
+        ]
+      },
+      {
+        file: "10重刊道藏辑要 女集.pdf",
+        id: "zh10",
+        name: "女集",
+        offset: 0,
+        entries: [
+          { title: "文始真經  陳顯微解", page: 1 },
+          { title: "文始真經序 陳顯微", page: 1 },
+          { title: "文始真經序 劉向", page: 2 },
+          { title: "文始真經序 葛洪", page: 3 },
+          { title: "總序 陳顯微", page: 4 },
+          { title: "二柱篇", page: 19 },
+          { title: "三極篇", page: 26 },
+          { title: "四符篇", page: 37 },
+          { title: "五鑑篇", page: 49 },
+          { title: "六匕篇", page: 60 },
+          { title: "七釜篇", page: 69 },
+          { title: "八籌篇", page: 79 },
+          { title: "九藥篇", page: 84 },
+          { title: "出世紀", page: 98 },
+          { title: "沖虛至德真經  江遹解", page: 102 },
+          { title: "天瑞", page: 102 },
+          { title: "黃帝", page: 129 },
+          { title: "穆王", page: 165 },
+          { title: "仲尼", page: 186 },
+          { title: "湯問", page: 212 },
+          { title: "力命", page: 242 },
+          { title: "楊朱", page: 262 },
+          { title: "說符", page: 285 },
+          { title: "通玄真經 默希子注", page: 311 },
+          { title: "通玄真經序 默希子", page: 311 },
+          { title: "道原", page: 312 },
+          { title: "精誠", page: 324 },
+          { title: "九守", page: 335 },
+          { title: "符言", page: 347 },
+          { title: "道德", page: 357 },
+          { title: "上德", page: 368 },
+          { title: "微明", page: 379 },
+          { title: "自然", page: 390 },
+          { title: "下德", page: 400 },
+          { title: "上仁", page: 410 },
+          { title: "上義", page: 419 },
+          { title: "上禮", page: 428 },
+          { title: "洞靈真經  何燦注", page: 436 },
+          { title: "全道篇", page: 436 },
+          { title: "用道篇", page: 442 },
+          { title: "政道篇", page: 445 },
+          { title: "君道篇", page: 457 },
+          { title: "臣道篇", page: 462 },
+          { title: "賢道篇", page: 464 },
+          { title: "訓道篇", page: 469 },
+          { title: "農道篇", page: 476 },
+          { title: "兵道篇", page: 483 },
+          { title: "太極仙公傳序 朱綽", page: 489 },
+          { title: "太極葛仙公傳 譚嗣先編", page: 491 },
+        ]
+      },
+      {
+        file: "11重刊道藏辑要 虚集.pdf",
+        id: "zh11",
+        name: "虛集",
+        offset: 0,
+        entries: [
+          { title: "參同契闡幽  朱元育", page: 1 },
+          { title: "參同契闡幽序", page: 1 },
+          { title: "上篇-乾坤門戶第一", page: 4 },
+          { title: "上篇-坎離二用章第二", page: 11 },
+          { title: "上篇-日月含符章第三", page: 16 },
+          { title: "上篇-天得進退章第四", page: 20 },
+          { title: "上篇-君臣御政章第五", page: 29 },
+          { title: "上篇-鍊已立基章第六", page: 34 },
+          { title: "上篇-兩竅互用章第七", page: 36 },
+          { title: "上篇-明辨邪正章第八", page: 42 },
+          { title: "上篇-兩弦合體章第九", page: 45 },
+          { title: "上篇-金返歸性章第十", page: 48 },
+          { title: "上篇-真土造化章第十一", page: 50 },
+          { title: "上篇-同類相從章第十二", page: 55 },
+          { title: "上篇-祖述三聖章第十三", page: 58 },
+          { title: "上篇-還丹法象章第十四", page: 62 },
+          { title: "上篇-還丹名義章第十五", page: 67 },
+          { title: "中篇-四象環中章第十六", page: 74 },
+          { title: "中篇-動靜應時章第十七", page: 77 },
+          { title: "中篇-坎離交媾章第十八", page: 81 },
+          { title: "中篇-契坤交媾章第十九", page: 88 },
+          { title: "中篇-性命歸元章第二十", page: 96 },
+          { title: "中篇-二炁感化章第二十一", page: 102 },
+          { title: "中篇-關鍵三寶章第二十二", page: 104 },
+          { title: "中篇-旁門無功章第二十三", page: 109 },
+          { title: "中篇-性情交會章第二十四", page: 111 },
+          { title: "中篇-審察真偽章第二十五", page: 116 },
+          { title: "中篇-鉛汞相投章第二十六", page: 119 },
+          { title: "中篇-制鍊魂魄章第二十七", page: 123 },
+          { title: "中篇-三家相見章第二十八", page: 127 },
+          { title: "中篇-刑德反復章第二十九", page: 130 },
+          { title: "中篇-陰陽交感章第三十", page: 133 },
+          { title: "中篇-伏食成功章第三十一", page: 136 },
+          { title: "下篇-爐鼎妙用章第三十二", page: 142 },
+          { title: "下篇-火候全功章第三十三", page: 148 },
+          { title: "下篇-三道由一章第三十四", page: 160 },
+          { title: "下篇-四象歸根章第三十五", page: 165 },
+          { title: "下篇-自敘啟後章第三十六", page: 169 },
+          { title: "參同契分章注  上陽子注", page: 175 },
+          { title: "參同契分章注目錄", page: 175 },
+          { title: "上篇-大易總敘章第一", page: 177 },
+          { title: "上篇-乾坤設位章第二", page: 181 },
+          { title: "上篇-日月懸象章第三", page: 184 },
+          { title: "上篇-聖人上觀章第四", page: 187 },
+          { title: "上篇-君臣御政章第五", page: 190 },
+          { title: "上篇-鍊已立基章第六", page: 192 },
+          { title: "上篇-明兩知竅章第七", page: 194 },
+          { title: "上篇-明辨邪正章第八", page: 198 },
+          { title: "上篇-龍虎兩弦章第九", page: 199 },
+          { title: "上篇-金返歸性章第十", page: 200 },
+          { title: "上篇-二土全功章第十一", page: 203 },
+          { title: "上篇-同類合體章第十二", page: 205 },
+          { title: "上篇-三聖前識章第十三", page: 207 },
+          { title: "上篇-金丹刀圭章第十四", page: 210 },
+          { title: "上篇-水火情性章第十五", page: 214 },
+          { title: "中篇-陰陽精氣章第十六", page: 218 },
+          { title: "中篇-君子居室章第十七", page: 220 },
+          { title: "中篇-晦朔合符章第十八", page: 222 },
+          { title: "中篇-爻變功用章第十九", page: 225 },
+          { title: "中篇-養性立命章第二十", page: 228 },
+          { title: "中篇-二炁感化章第二十一", page: 231 },
+          { title: "中篇-關鍵三寶章第二十二", page: 232 },
+          { title: "中篇-旁門無功章第二十三", page: 234 },
+          { title: "中篇-流珠金華章第二十四", page: 235 },
+          { title: "中篇-如審遭逢章第二十五", page: 237 },
+          { title: "中篇-姹女黃芽章第二十六", page: 238 },
+          { title: "中篇-男女相須章第二十七", page: 240 },
+          { title: "中篇-四者混沌章第二十八", page: 242 },
+          { title: "中篇-卯酉刑德章第二十九", page: 244 },
+          { title: "中篇-君子好逑章第三十", page: 245 },
+          { title: "下篇-聖賢伏鍊章第三十一", page: 247 },
+          { title: "下篇-法象成功章第三十二", page: 250 },
+          { title: "下篇-鼎器妙用章第三十三", page: 253 },
+          { title: "下篇-補塞遺脫章第三十四", page: 257 },
+          { title: "下篇-自敘啟後章第三十五", page: 258 },
+          { title: "參同契注 陳顯微注", page: 260 },
+          { title: "參同契序  鄭伯謙", page: 260 },
+          { title: "參同契序  陳顯微", page: 262 },
+          { title: "參同契後序", page: 265 },
+          { title: "參同契跋", page: 266 },
+          { title: "參同契目錄", page: 267 },
+          { title: "參同契上篇", page: 268 },
+          { title: "參同契中篇", page: 293 },
+          { title: "參同契下篇", page: 308 },
+          { title: "入藥鏡  王道淵 李攀龍 彭好古 注解", page: 319 },
+          { title: "入藥鏡序  李攀龍", page: 319 },
+          { title: "入藥鏡序  王道淵", page: 320 },
+          { title: "入藥鏡", page: 321 },
+          { title: "淮南鴻烈解  許慎", page: 361 },
+          { title: "淮南鴻烈解敘", page: 361 },
+          { title: "下篇-原道訓上", page: 363 },
+          { title: "下篇-原道訓下", page: 370 },
+          { title: "下篇-俶真訓上", page: 380 },
+          { title: "下篇-俶真訓下", page: 388 },
+          { title: "下篇-天文訓上", page: 395 },
+          { title: "下篇-天文訓下", page: 402 },
+          { title: "下篇-地形訓上", page: 414 },
+          { title: "下篇-地形訓下", page: 420 },
+          { title: "下篇-時則訓上", page: 426 },
+          { title: "下篇-時則訓下", page: 434 },
+          { title: "下篇-覽冥訓", page: 446 },
+          { title: "下篇-精神訓", page: 456 },
+          { title: "下篇-本經訓", page: 471 },
+          { title: "下篇-主術訓上", page: 483 },
+          { title: "下篇-主術訓下", page: 494 },
+          { title: "下篇-繆稱訓", page: 508 },
+          { title: "下篇-齊俗訓", page: 522 },
+          { title: "下篇-道應訓", page: 540 },
+          { title: "下篇-氾論訓上", page: 560 },
+          { title: "下篇-氾論訓下", page: 573 },
+          { title: "下篇-詮言訓", page: 583 },
+          { title: "下篇-兵略訓", page: 598 },
+          { title: "下篇-說山訓", page: 615 },
+          { title: "下篇-說林訓", page: 632 },
+          { title: "下篇-人間訓", page: 647 },
+          { title: "下篇-修務訓", page: 670 },
+          { title: "下篇-泰族訓", page: 685 },
+          { title: "下篇-要略", page: 705 },
+          { title: "抱朴子  葛洪著", page: 714 },
+          { title: "抱朴子序", page: 714 },
+          { title: "內篇-暢玄", page: 716 },
+          { title: "內篇-論仙", page: 718 },
+          { title: "內篇-對俗", page: 726 },
+          { title: "內篇-金丹", page: 734 },
+          { title: "內篇-神丹", page: 740 },
+          { title: "內篇-至理", page: 748 },
+          { title: "內篇-微旨", page: 755 },
+          { title: "內篇-塞難", page: 762 },
+          { title: "內篇-釋滯", page: 767 },
+          { title: "內篇-道意", page: 775 },
+          { title: "內篇-明本", page: 782 },
+          { title: "內篇-仙藥", page: 787 },
+          { title: "內篇-辯問", page: 802 },
+          { title: "內篇-極言", page: 808 },
+          { title: "內篇-勤求", page: 815 },
+          { title: "內篇-雜應", page: 823 },
+          { title: "內篇-黃白", page: 833 },
+          { title: "內篇-登涉", page: 842 },
+          { title: "內篇-地真", page: 864 },
+          { title: "內篇-遐覽", page: 867 },
+          { title: "內篇-袪惑", page: 874 },
+          { title: "內篇-別旨", page: 880 },
+          { title: "外篇-嘉遁", page: 882 },
+          { title: "外篇-自敘", page: 888 },
+          { title: "葛仙翁肘後備急方  葛洪", page: 899 },
+          { title: "孫真人備急千金要方", page: 1153 },
+        ]
+      },
+      {
+        file: "12重刊道藏辑要 危集.pdf",
+        id: "zh12",
+        name: "危集",
+        offset: 0,
+        entries: [
+          { title: "靈寶畢法  鍾離權 呂洞賓", page: 1 },
+          { title: "鐘呂傳道集  鍾離權 呂洞賓", page: 33 },
+          { title: "銅符鐵券  諶母元君授許真君", page: 93 },
+          { title: "石函記   許真君著", page: 122 },
+          { title: "太上靈寶淨明宗教錄", page: 156 },
+          { title: "化書新聲  王一清註", page: 210 },
+          { title: "葛仙翁太極沖玄至道心傳  凝陽子纂", page: 312 },
+          { title: "黃石公素書", page: 348 },
+          { title: "劉子  劉晝著", page: 354 },
+          { title: "玄真子  張志和著", page: 367 },
+          { title: "天隱子  司馬承楨著", page: 384 },
+        ]
+      },
+      {
+        file: "13重刊道藏辑要 室集.pdf",
+        id: "zh13",
+        name: "室集",
+        offset: 0,
+        entries: [
+          { title: "十六品經", page: 1 },
+          { title: "八品經", page: 7 },
+          { title: "五品經", page: 38 },
+          { title: "三品經", page: 49 },
+          { title: "呂祖本傳", page: 97 },
+          { title: "金華宗旨", page: 112 },
+          { title: "金華宗旨闡幽問答", page: 138 },
+          { title: "同參經", page: 177 },
+          { title: "五經合編", page: 243 },
+          { title: "呂祖心經", page: 246 },
+          { title: "先天一炁度人妙經", page: 248 },
+          { title: "延生證聖真經", page: 255 },
+          { title: "金玉寶經", page: 268 },
+          { title: "醒心真經", page: 287 },
+          { title: "呂帝文集", page: 295 },
+          { title: "呂帝詩集上卷", page: 424 },
+          { title: "呂帝詩集下卷", page: 518 },
+          { title: "純陽三書", page: 645 },
+          { title: "玄藻秘旨", page: 647 },
+          { title: "純陽詩集", page: 693 },
+          { title: "枕中秘旨", page: 705 },
+          { title: "性功秘旨", page: 749 },
+        ]
+      },
+      {
+        file: "14重刊道藏辑要 壁集.pdf",
+        id: "zh14",
+        name: "壁集",
+        offset: 0,
+        entries: [
+          { title: "易說   孚佑上帝純陽呂祖天師著", page: 1 },
+          { title: "易說自序", page: 1 },
+          { title: "易說題詞", page: 3 },
+          { title: "圖解目錄", page: 4 },
+          { title: "序卦圖", page: 51 },
+          { title: "易說上經", page: 61 },
+          { title: "易說下經", page: 143 },
+          { title: "繫辭上傳", page: 225 },
+          { title: "繫辭下傳", page: 238 },
+          { title: "說卦傳", page: 250 },
+          { title: "序卦傳", page: 256 },
+          { title: "雜卦傳", page: 258 },
+          { title: "易說後跋", page: 259 },
+          { title: "語錄大觀  孚佑上帝純陽呂祖天師著", page: 263 },
+          { title: "涵三語錄", page: 263 },
+          { title: "雲巢精舍語錄", page: 301 },
+          { title: "趵突泉語錄", page: 320 },
+          { title: "玉詮語錄", page: 339 },
+          { title: "新月壇語錄", page: 351 },
+          { title: "玉清語錄", page: 358 },
+          { title: "福報指南", page: 364 },
+          { title: "孚佑帝君正教編", page: 374 },
+          { title: "三寶心鐙", page: 390 },
+          { title: "自序、諸祖師總序", page: 390 },
+          { title: "例言", page: 393 },
+          { title: "金集 道世指歸", page: 395 },
+          { title: "木集 天地樞機", page: 401 },
+          { title: "水集  藥火真詮", page: 419 },
+          { title: "火集  捉月雲梯", page: 431 },
+          { title: "乾訣", page: 438 },
+          { title: "土集  西池度楫", page: 444 },
+          { title: "性功詩十八首", page: 445 },
+          { title: "功夫次第 孫不二", page: 448 },
+          { title: "吳采鸞真人", page: 451 },
+          { title: "樊雲翹夫人", page: 451 },
+          { title: "月華君崔少玄", page: 452 },
+          { title: "清靜散人孫仙姑", page: 453 },
+          { title: "唐廣真真人", page: 454 },
+          { title: "玄靜散人周真人", page: 455 },
+          { title: "坤訣", page: 456 },
+          { title: "總跋", page: 459 },
+          { title: "微言摘要 孚佑上帝著", page: 461 },
+          { title: "呂帝聖蹟紀要", page: 493 },
+          { title: "天仙金丹心法", page: 543 },
+          { title: "東園語錄", page: 694 },
+          { title: "東園雜詠", page: 771 },
+        ]
+      },
+      {
+        file: "15重刊道藏辑要 奎集.pdf",
+        id: "zh15",
+        name: "奎集",
+        offset: 0,
+        entries: [
+          { title: "至真歌 海蟾帝君著", page: 1 },
+          { title: "玉清金笥青華秘文金寶內鍊丹法", page: 4 },
+          { title: "題辭  王邦叔", page: 4 },
+          { title: "奏表", page: 5 },
+          { title: "心為君論", page: 7 },
+          { title: "神為主論", page: 9 },
+          { title: "氣為用 精從氣", page: 10 },
+          { title: "意為媒 坎離說", page: 11 },
+          { title: "下手工夫訣", page: 11 },
+          { title: "凝神說", page: 12 },
+          { title: "幻丹說 捉丹法", page: 13 },
+          { title: "神水華池說", page: 14 },
+          { title: "百竅說 採取論", page: 15 },
+          { title: "交會論 口訣中口訣", page: 18 },
+          { title: "直泄天機論", page: 21 },
+          { title: "蟾光論", page: 23 },
+          { title: "爐鼎論", page: 25 },
+          { title: "神室論", page: 26 },
+          { title: "火候論", page: 27 },
+          { title: "陰盡  陽純", page: 30 },
+          { title: "總論金丹之要", page: 31 },
+          { title: "次第祕訣", page: 34 },
+          { title: "火候祕訣", page: 35 },
+          { title: "悟真篇  張伯端著 薛道光陸子野陳致虛注", page: 38 },
+          { title: "悟真篇序", page: 38 },
+          { title: "七言律詩 16", page: 41 },
+          { title: "七言絕句  64", page: 75 },
+          { title: "五言八句  1", page: 125 },
+          { title: "西江月  12", page: 126 },
+          { title: "又西江月", page: 139 },
+          { title: "續七言絕句  5", page: 140 },
+          { title: "悟真篇後序", page: 145 },
+          { title: "悟真篇拾遺 禪宗歌頌詩曲雜言", page: 148 },
+          { title: "讀周易參同契 薛道光註", page: 156 },
+          { title: "贈白龍洞劉道人歌 玉谿子李簡易註", page: 159 },
+          { title: "悟真篇直指詳說 無名子翁葆光著", page: 165 },
+          { title: "金丹四百字序 張伯端", page: 174 },
+          { title: "金丹四百字 張伯端著 彭好古註解", page: 177 },
+          { title: "石橋歌", page: 185 },
+          { title: "悟真篇闡幽 雲陽道人朱元育", page: 186 },
+          { title: "卷上-七言四韻16", page: 187 },
+          { title: "卷中-七言絕句64", page: 207 },
+          { title: "卷下-西江月12", page: 254 },
+          { title: "卷下-又一首", page: 268 },
+          { title: "卷下-絕句五首", page: 270 },
+          { title: "還源篇  杏林石泰得之著", page: 276 },
+          { title: "還源篇序", page: 276 },
+          { title: "五言絕句", page: 277 },
+          { title: "後序", page: 281 },
+          { title: "還丹復命篇  薛道光", page: 282 },
+          { title: "還丹復命篇序", page: 282 },
+          { title: "五言律詩十六首", page: 284 },
+          { title: "七言絕句", page: 286 },
+          { title: "又詩一首", page: 291 },
+          { title: "西江月", page: 291 },
+          { title: "詩一首", page: 292 },
+          { title: "丹髓歌", page: 293 },
+          { title: "泥洹集  陳楠著", page: 297 },
+          { title: "泥洹集序 王思誠", page: 297 },
+          { title: "翠虛吟", page: 298 },
+          { title: "紫庭經", page: 302 },
+          { title: "丹基歸一論", page: 304 },
+          { title: "水調歌頭贈九霞子鞠九思", page: 306 },
+          { title: "鵲橋仙贈蟄虛子沙道昭", page: 306 },
+          { title: "真珠簾贈海南子白玉蟾", page: 306 },
+          { title: "金丹詩訣(一百首)", page: 307 },
+          { title: "析疑指迷論", page: 323 },
+          { title: "析疑指迷論序", page: 323 },
+          { title: "析疑", page: 324 },
+          { title: "指迷", page: 329 },
+        ]
+      },
+      {
+        file: "16重刊道藏辑要 娄集.pdf",
+        id: "zh16",
+        name: "婁集",
+        offset: 0,
+        entries: [
+          { title: "瓊琯白真人集  白玉蟾", page: 1 },
+          { title: "瓊琯白真人集序", page: 1 },
+          { title: "白玉蟾真人像", page: 3 },
+          { title: "瓊琯白真人集目錄", page: 4 },
+          { title: "賦", page: 33 },
+          { title: "序", page: 41 },
+          { title: "詩五言古", page: 51 },
+          { title: "五言律", page: 56 },
+          { title: "五言 絕句", page: 59 },
+          { title: "六言詩", page: 62 },
+          { title: "詩七言古-", page: 63 },
+          { title: "長短句", page: 71 },
+          { title: "詩七言律", page: 81 },
+          { title: "七言絕句", page: 105 },
+          { title: "歌", page: 132 },
+          { title: "南嶽九真歌題壽寗沖和閣", page: 132 },
+          { title: "畫中眾仙歌", page: 132 },
+          { title: "雲遊歌", page: 133 },
+          { title: "快活歌", page: 136 },
+          { title: "必竟恁地歌", page: 139 },
+          { title: "安分歌", page: 140 },
+          { title: "茶歌", page: 141 },
+          { title: "大道歌", page: 142 },
+          { title: "祈雨歌", page: 142 },
+          { title: "木郎祈雨咒 並註", page: 143 },
+          { title: "武夷歌", page: 144 },
+          { title: "西林入室歌", page: 145 },
+          { title: "萬法歸一歌", page: 146 },
+          { title: "曲", page: 148 },
+          { title: "聯句", page: 169 },
+          { title: "篇-鶴林問道篇", page: 172 },
+          { title: "碑-有宋廬山養正先生黃君仙遊碑", page: 177 },
+          { title: "題", page: 181 },
+          { title: "辭-讚救苦經辭", page: 182 },
+          { title: "跋-跋上清靈樞山雷火雲秘法", page: 183 },
+          { title: "頌-鶴林傳法明心頌", page: 183 },
+          { title: "頌-狗子佛性頌", page: 184 },
+          { title: "銘", page: 184 },
+          { title: "偈", page: 184 },
+          { title: "記", page: 185 },
+          { title: "文", page: 223 },
+          { title: "屏睡魔文", page: 223 },
+          { title: "道學自勉文", page: 225 },
+          { title: "東樓小參文", page: 225 },
+          { title: "冬至小參文", page: 226 },
+          { title: "勸道文", page: 227 },
+          { title: "隱山文", page: 228 },
+          { title: "道堂戒論文", page: 231 },
+          { title: "說", page: 232 },
+          { title: "無極圖說", page: 232 },
+          { title: "五寶說", page: 233 },
+          { title: "夢說", page: 234 },
+          { title: "贈盧寺丞子文艮庵說", page: 234 },
+          { title: "醫癰癤序", page: 235 },
+          { title: "論", page: 236 },
+          { title: "修仙辯惑論", page: 236 },
+          { title: "谷神不死論", page: 239 },
+          { title: "陰陽升降論", page: 240 },
+          { title: "玄關顯秘論", page: 241 },
+          { title: "經-烏兔經", page: 245 },
+          { title: "經-鉤鎖連環經", page: 246 },
+          { title: "經-丹房法語", page: 247 },
+          { title: "表章疏語", page: 249 },
+          { title: "書-謝張紫陽書", page: 264 },
+          { title: "書-謝仙師寄書詞", page: 267 },
+          { title: "贊", page: 268 },
+          { title: "傳-旌陽許真君傳", page: 280 },
+          { title: "傳-許真君後傳", page: 292 },
+          { title: "逍遙山群仙傳", page: 299 },
+          { title: "附錄-雜著", page: 308 },
+          { title: "金丹火候訣大藥訣 等", page: 322 },
+          { title: "丹法參同十九訣 等", page: 327 },
+          { title: "白真人文集後敘", page: 333 },
+          { title: "海瓊白真君語錄 謝顯道編", page: 335 },
+          { title: "傳度謝恩表文", page: 345 },
+          { title: "霄吟三絕", page: 347 },
+          { title: "飛仙吟贈留紫元", page: 347 },
+          { title: "題天慶觀", page: 348 },
+          { title: "題嶽祠", page: 348 },
+          { title: "乳燕飛華屋", page: 348 },
+          { title: "贈蕊珠侍經潘常吉", page: 349 },
+          { title: "贈紫華侍經周希清", page: 349 },
+          { title: "鶴林法語", page: 350 },
+          { title: "武夷升堂", page: 364 },
+          { title: "常州清醮升堂", page: 367 },
+          { title: "廬士升堂", page: 370 },
+          { title: "平江鶴會升堂", page: 373 },
+          { title: "東樓小參", page: 376 },
+          { title: "冬至小參", page: 377 },
+          { title: "西林入室", page: 378 },
+        ]
+      },
+      {
+        file: "17重刊道藏辑要 胃集.pdf",
+        id: "zh17",
+        name: "胃集",
+        offset: 0,
+        entries: [
+          { title: "重陽全真集  王喆", page: 1 },
+          { title: "重陽教化集  王喆", page: 187 },
+          { title: "重陽分梨十化集  王喆", page: 242 },
+          { title: "立教十五論  王喆", page: 262 },
+          { title: "丹陽真人直言 示門人", page: 267 },
+          { title: "太公陰符經", page: 269 },
+          { title: "五篇靈文  重陽祖師註", page: 314 },
+          { title: "長春真人西遊記 李志常", page: 329 },
+          { title: "磻溪集  丘處機撰", page: 376 },
+          { title: "仙樂集  劉處玄著", page: 462 },
+          { title: "無為清靜長生真人至真語錄", page: 524 },
+          { title: "水雲集 譚處端著", page: 550 },
+          { title: "洞玄金玉集  馬丹陽述", page: 599 },
+          { title: "漸悟集  馬鈺撰", page: 754 },
+          { title: "丹陽神光燦  馬鈺撰", page: 816 },
+          { title: "丹陽真人語錄  王頤中集", page: 847 },
+          { title: "孫不二元君法語", page: 859 },
+          { title: "孫不二元君傳述丹道秘書", page: 862 },
+          { title: "玉清胎元內養真經", page: 862 },
+          { title: "玉清無上內景真經", page: 863 },
+          { title: "大道守一寶章", page: 864 },
+          { title: "太古集  郝大通撰", page: 869 },
+          { title: "雲光集  王處一撰", page: 914 },
+          { title: "葆光集  尹志平撰", page: 1016 },
+          { title: "金液還丹印證圖  白玉蟾授龍眉子述涵蟾子注", page: 1093 },
+        ]
+      },
+      {
+        file: "18重刊道藏辑要 昴集.pdf",
+        id: "zh18",
+        name: "昴集",
+        offset: 0,
+        entries: [
+          { title: "金丹大要  上陽子陳致虛", page: 1 },
+          { title: "金丹大要中", page: 92 },
+          { title: "金丹大要下", page: 144 },
+          { title: "金丹大成 蕭廷之", page: 224 },
+          { title: "規中指南  陳虛白", page: 269 },
+          { title: "太玄寶典", page: 285 },
+          { title: "坐忘論  司馬子微", page: 306 },
+          { title: "悟玄篇  余洞真", page: 320 },
+          { title: "太虛心淵篇", page: 330 },
+          { title: "丹房奧論  學仙子程了一", page: 335 },
+          { title: "明真破妄頌  虛靖張真君", page: 348 },
+          { title: "道法心傳  王惟一", page: 355 },
+          { title: "橐籥子", page: 385 },
+          { title: "陰丹內篇", page: 393 },
+          { title: "雲山集  姬志真", page: 395 },
+          { title: "雲山集二", page: 473 },
+          { title: "草堂集  五峯白雲子王先生", page: 535 },
+          { title: "自然集  馬先生", page: 569 },
+          { title: "鳴真集  玄虛子", page: 578 },
+          { title: "西雲集  洞明子", page: 588 },
+          { title: "中和集  瑩蟾子李道純", page: 618 },
+          { title: "晉真人語錄", page: 716 },
+          { title: "徐神翁語錄", page: 727 },
+          { title: "盤山棲雲王真人語錄", page: 762 },
+          { title: "清和真人北游語錄", page: 795 },
+        ]
+      },
+      {
+        file: "19重刊道藏辑要 毕集.pdf",
+        id: "zh19",
+        name: "畢集",
+        offset: 0,
+        entries: [
+          { title: "仙佛合宗語錄  伍守陽著 伍守虛校註", page: 1 },
+          { title: "吉王朱太和十九問", page: 1 },
+          { title: "伍太一十九問1-7", page: 60 },
+          { title: "伍太一十九問8-19", page: 125 },
+          { title: "李羲人七問", page: 218 },
+          { title: "長沙王朱星垣二問", page: 223 },
+          { title: "伍守虛二問", page: 227 },
+          { title: "顧與弢六問", page: 241 },
+          { title: "或問十三條", page: 248 },
+          { title: "雜問答三條", page: 257 },
+          { title: "伍真人修仙歌", page: 262 },
+          { title: "天仙正理直論增註  伍守陽伍守虛", page: 278 },
+          { title: "本序", page: 278 },
+          { title: "重修天仙正理書後", page: 289 },
+          { title: "伍真人事實及授受源流略", page: 291 },
+          { title: "增註說", page: 292 },
+          { title: "先天後天二炁直論第一", page: 294 },
+          { title: "藥物直論第二", page: 301 },
+          { title: "鼎器直論第三", page: 308 },
+          { title: "火候經第四", page: 313 },
+          { title: "煉已直論第五", page: 345 },
+          { title: "築基直論第六", page: 353 },
+          { title: "煉藥直論第七", page: 355 },
+          { title: "伏氣直論第八", page: 361 },
+          { title: "胎息直論第九", page: 366 },
+          { title: "後跋", page: 378 },
+          { title: "道原淺說篇", page: 388 },
+          { title: "金丹要訣  伍沖虛", page: 433 },
+          { title: "金丹大旨", page: 433 },
+          { title: "言先天 後天", page: 436 },
+          { title: "先天契後天說", page: 436 },
+          { title: "制凡銀凡鉛真訣", page: 438 },
+          { title: "制凡砂凡汞下手真訣", page: 438 },
+          { title: "築基說", page: 439 },
+          { title: "死砂接生砂真訣", page: 440 },
+          { title: "補母說", page: 441 },
+          { title: "強母足子法", page: 442 },
+          { title: "過母說", page: 442 },
+          { title: "庶母乳哺說", page: 443 },
+          { title: "超神脫胎說", page: 445 },
+          { title: "陽池詩   陰池詩", page: 447 },
+          { title: "採金歌", page: 449 },
+          { title: "金丹配合歌", page: 450 },
+          { title: "火候詞", page: 451 },
+          { title: "伍真人丹道九篇", page: 452 },
+          { title: "伍真人丹道九篇緣起", page: 452 },
+          { title: "伍真人丹道九篇序", page: 453 },
+          { title: "最初還丹第一", page: 454 },
+          { title: "真意第二", page: 455 },
+          { title: "水源清濁真丹幻丹第三", page: 456 },
+          { title: "火足候止火景採大藥候大藥候天機第四", page: 457 },
+          { title: "七日採大藥天機第五", page: 459 },
+          { title: "大藥過關服食第六", page: 461 },
+          { title: "守中第七", page: 464 },
+          { title: "出神景出神收神法第八", page: 467 },
+          { title: "末後還虛第九", page: 468 },
+          { title: "後跋", page: 469 },
+          { title: "張三丰祖師全集  李西月編", page: 471 },
+          { title: "序", page: 471 },
+          { title: "凡例十二則", page: 476 },
+          { title: "總目", page: 478 },
+          { title: "圖像", page: 479 },
+          { title: "古文", page: 483 },
+          { title: "隱鑑", page: 503 },
+          { title: "卷一-寶誥", page: 532 },
+          { title: "列傳", page: 535 },
+          { title: "三丰先生本傳  汪錫齡", page: 539 },
+          { title: "三丰先生傳  圓嶠外史", page: 542 },
+          { title: "道派", page: 544 },
+          { title: "前歷祖傳", page: 544 },
+          { title: "後列仙傳", page: 546 },
+          { title: "列仙派演", page: 548 },
+          { title: "拳技派", page: 549 },
+          { title: "雜說-正訛", page: 550 },
+          { title: "顯蹟類", page: 554 },
+          { title: "玄要篇上", page: 578 },
+          { title: "玄要篇下", page: 607 },
+          { title: "大道論", page: 644 },
+          { title: "玄機直講", page: 654 },
+          { title: "煉丹火候說二篇", page: 654 },
+          { title: "返還證驗說", page: 656 },
+          { title: "服食大丹說", page: 660 },
+          { title: "一粒黍米說", page: 662 },
+          { title: "登天指迷說", page: 663 },
+          { title: "註九皇丹經龍虎鉛汞論", page: 667 },
+          { title: "註呂祖百字碑", page: 668 },
+          { title: "道言淺近說", page: 672 },
+          { title: "三丰先生辑說", page: 678 },
+          { title: "雲水前集  古今詩類", page: 684 },
+          { title: "雲水後集  古今詩類", page: 696 },
+          { title: "雲水三集  古今詩類", page: 721 },
+          { title: "天口篇  訓體文類", page: 746 },
+          { title: "斗母元尊九皇真經", page: 771 },
+          { title: "前三教上聖靈妙真經", page: 780 },
+          { title: "中三教上聖靈妙真經", page: 787 },
+          { title: "後三教上聖靈妙真經", page: 791 },
+          { title: "洞玄度人寶懺諸天無上真經", page: 795 },
+          { title: "菩提圓妙經", page: 807 },
+          { title: "鐘偈", page: 811 },
+          { title: "水石閒談", page: 813 },
+          { title: "古今題贈", page: 830 },
+          { title: "隱鏡編年", page: 843 },
+          { title: "時地 彙記", page: 847 },
+          { title: "無根樹詞 劉悟元註 李涵虛增解", page: 863 },
+          { title: "如意寶珠", page: 918 },
+          { title: "文昌帝君開心咒註釋", page: 921 },
+          { title: "神光經", page: 926 },
+          { title: "凖提心經", page: 931 },
+          { title: "斗姥大法語 心經", page: 959 },
+          { title: "大悲神咒", page: 976 },
+        ]
+      },
+      {
+        file: "20重刊道藏辑要 觜集.pdf",
+        id: "zh20",
+        name: "觜集",
+        offset: 0,
+        entries: [
+          { title: "真誥  貞白真人華陽隱居陶弘景", page: 1 },
+          { title: "真誥敘", page: 1 },
+          { title: "運象篇", page: 2 },
+          { title: "甄命授", page: 60 },
+          { title: "協昌期", page: 107 },
+          { title: "稽神樞", page: 146 },
+          { title: "闡幽微", page: 201 },
+          { title: "握真輔", page: 222 },
+          { title: "翼真檢", page: 250 },
+          { title: "道樞  至游子曾慥", page: 270 },
+          { title: "玄軸篇", page: 270 },
+          { title: "五化篇", page: 275 },
+          { title: "坐忘篇", page: 278 },
+          { title: "集要篇", page: 283 },
+          { title: "碎金篇", page: 284 },
+          { title: "容成篇", page: 286 },
+          { title: "陰符篇", page: 288 },
+          { title: "西升篇", page: 293 },
+          { title: "內德篇", page: 294 },
+          { title: "玄綱篇", page: 295 },
+          { title: "玉芝篇", page: 297 },
+          { title: "周天篇", page: 310 },
+          { title: "黃帝問篇", page: 312 },
+          { title: "軒轅問篇", page: 314 },
+          { title: "百問篇", page: 315 },
+          { title: "虛白問篇", page: 325 },
+          { title: "真誥篇", page: 329 },
+          { title: "黃庭篇", page: 334 },
+          { title: "水火篇", page: 341 },
+          { title: "坎離篇", page: 342 },
+          { title: "太極篇", page: 344 },
+          { title: "火候篇", page: 345 },
+          { title: "甲庚篇", page: 345 },
+          { title: "崑崙篇", page: 348 },
+          { title: "眾氣篇", page: 349 },
+          { title: "服霧篇", page: 350 },
+          { title: "內景篇", page: 350 },
+          { title: "外景篇", page: 355 },
+          { title: "神景篇", page: 359 },
+          { title: "頤生篇", page: 360 },
+          { title: "平都篇", page: 362 },
+          { title: "鍊精篇", page: 367 },
+          { title: "純陽篇", page: 368 },
+          { title: "華陽篇", page: 369 },
+          { title: "觀天篇", page: 373 },
+          { title: "觀空篇", page: 375 },
+          { title: "太清篇", page: 376 },
+          { title: "金丹篇", page: 376 },
+          { title: "泥金篇", page: 378 },
+          { title: "金碧篇", page: 384 },
+          { title: "還金篇", page: 388 },
+          { title: "還元篇", page: 388 },
+          { title: "玉壺篇", page: 391 },
+          { title: "大丹篇", page: 393 },
+          { title: "指玄篇", page: 398 },
+          { title: "歸根篇", page: 400 },
+          { title: "鴻濛篇", page: 402 },
+          { title: "呼吸篇", page: 404 },
+          { title: "枕中篇", page: 405 },
+          { title: "內想篇", page: 406 },
+          { title: "心鏡篇", page: 407 },
+          { title: "胎息篇", page: 412 },
+          { title: "聖胎篇", page: 416 },
+          { title: "元氣篇", page: 420 },
+          { title: "血脈篇", page: 421 },
+          { title: "調氣篇", page: 422 },
+          { title: "靈源篇", page: 424 },
+          { title: "中源篇", page: 426 },
+          { title: "中黃篇", page: 427 },
+          { title: "運火篇", page: 434 },
+          { title: "混元篇", page: 435 },
+          { title: "契真篇", page: 444 },
+          { title: "修真篇", page: 449 },
+          { title: "悟真篇", page: 450 },
+          { title: "洞真篇", page: 453 },
+          { title: "崇真篇", page: 455 },
+          { title: "返真篇", page: 456 },
+          { title: "修真指玄篇", page: 459 },
+          { title: "真一內丹篇", page: 468 },
+          { title: "還丹參同篇", page: 469 },
+          { title: "金丹明鏡篇", page: 472 },
+          { title: "大還金丹篇", page: 476 },
+          { title: "金書玉鑒篇", page: 476 },
+          { title: "修真要訣篇", page: 482 },
+          { title: "修鍊金丹篇", page: 484 },
+          { title: "金液還丹內篇", page: 488 },
+          { title: "金丹泥金篇", page: 490 },
+          { title: "金玄八素篇(缺4頁)", page: 495 },
+          { title: "金碧龍虎篇", page: 496 },
+          { title: "九轉金丹篇", page: 497 },
+          { title: "肘後三成篇", page: 510 },
+          { title: "准易繫辭篇", page: 517 },
+          { title: "日月玄樞篇", page: 525 },
+          { title: "九真玉樞篇", page: 529 },
+          { title: "金液龍虎篇", page: 534 },
+          { title: "太白還丹篇", page: 536 },
+          { title: "太清養生篇", page: 542 },
+          { title: "上清金碧篇", page: 559 },
+          { title: "金虎鉛汞篇", page: 561 },
+          { title: "鉛汞五行篇", page: 572 },
+          { title: "真一篇", page: 574 },
+          { title: "正一篇", page: 576 },
+          { title: "二關篇", page: 577 },
+          { title: "三元篇", page: 578 },
+          { title: "三住篇", page: 579 },
+          { title: "四神篇", page: 580 },
+          { title: "五戒篇", page: 582 },
+          { title: "五行篇", page: 582 },
+          { title: "七神篇", page: 584 },
+          { title: "七返篇", page: 584 },
+          { title: "八瓊篇", page: 585 },
+          { title: "九仙篇", page: 587 },
+          { title: "參同契上篇(缺1頁)", page: 593 },
+          { title: "參同契中篇", page: 616 },
+          { title: "參同契下篇", page: 626 },
+          { title: "眾妙篇", page: 642 },
+          { title: "太還丹篇", page: 666 },
+          { title: "入藥鏡", page: 672 },
+          { title: "會真篇", page: 683 },
+          { title: "傳道篇", page: 705 },
+          { title: "靈寶篇", page: 738 },
+          { title: "洞玄靈寶真靈位業圖  陶弘景", page: 757 },
+          { title: "鳴鶴餘音  彭致中", page: 786 },
+          { title: "養真集  白鬂老人王士端", page: 915 },
+        ]
+      },
+      {
+        file: "21重刊道藏辑要 参集.pdf",
+        id: "zh21",
+        name: "參集",
+        offset: 0,
+        entries: [
+          { title: "雲笈七籤  張君房", page: 1 },
+          { title: "道德部", page: 1 },
+          { title: "混元混洞開闢劫運部", page: 12 },
+          { title: "道教本始部", page: 22 },
+          { title: "道教經法傳授部", page: 36 },
+          { title: "經教相承部", page: 51 },
+          { title: "三洞經教部", page: 64 },
+          { title: "本文", page: 82 },
+          { title: "經釋", page: 93 },
+          { title: "老君太上虛無自然本起經", page: 123 },
+          { title: "上清黃庭內景經", page: 134 },
+          { title: "上清黃庭外景經", page: 203 },
+          { title: "太清中黃真經", page: 231 },
+          { title: "黃庭遁甲緣身經", page: 258 },
+          { title: "黃帝陰符經", page: 267 },
+          { title: "天機經(解陰符經)", page: 274 },
+          { title: "靈寶洞玄自然九天生神章經", page: 281 },
+          { title: "洞玄靈寶定觀經", page: 290 },
+          { title: "太上老君內觀經", page: 298 },
+          { title: "老子中經(珠宮玉歷)", page: 303 },
+          { title: "太上飛行九神玉經(金簡內文)", page: 335 },
+          { title: "天地部", page: 360 },
+          { title: "日月星辰部", page: 390 },
+          { title: "十洲三島", page: 437 },
+          { title: "洞天福地", page: 447 },
+          { title: "二十八治", page: 463 },
+          { title: "稟受生命", page: 478 },
+        ]
+      },
+      {
+        file: "22重刊道藏辑要 井集.pdf",
+        id: "zh22",
+        name: "井集",
+        offset: 0,
+        entries: [
+          { title: "雲笈七籤  張君房", page: 1 },
+          { title: "雜修攝", page: 1 },
+          { title: "養性延命錄", page: 1 },
+          { title: "雜戒忌禳災祈善", page: 8 },
+          { title: "服氣療病", page: 11 },
+          { title: "導引按摩", page: 13 },
+          { title: "攝養枕中方", page: 16 },
+          { title: "齋戒", page: 61 },
+          { title: "說戒", page: 74 },
+          { title: "說百病", page: 91 },
+          { title: "七籤雜法", page: 101 },
+          { title: "秘要訣法", page: 179 },
+          { title: "諸真要略-太清神仙眾經要略", page: 270 },
+          { title: "仙籍旨訣-道生旨", page: 285 },
+          { title: "仙籍旨訣-養生辨疑訣", page: 292 },
+          { title: "仙籍旨訣-下元歌", page: 294 },
+          { title: "七部語要-連珠", page: 296 },
+          { title: "九守", page: 308 },
+          { title: "仙籍語論要記", page: 320 },
+          { title: "眾真語錄", page: 320 },
+          { title: "神內可學論", page: 329 },
+          { title: "道性論", page: 333 },
+          { title: "三相論", page: 334 },
+          { title: "真相論", page: 336 },
+          { title: "陰陽五行論", page: 337 },
+          { title: "坐忘論", page: 339 },
+          { title: "法性虛妄 道性因緣", page: 351 },
+          { title: "本性淳善", page: 352 },
+          { title: "有為無為法", page: 353 },
+          { title: "觀四大相", page: 353 },
+          { title: "色身煩惱", page: 354 },
+          { title: "栰喻", page: 356 },
+          { title: "病說", page: 357 },
+          { title: "求道二患", page: 359 },
+          { title: "夢喻虛妄 散花喻", page: 360 },
+          { title: "論種子", page: 362 },
+          { title: "真假", page: 363 },
+          { title: "空法", page: 364 },
+          { title: "紀", page: 365 },
+          { title: "傳", page: 406 },
+          { title: "道教靈驗記", page: 494 },
+        ]
+      },
+      {
+        file: "23重刊道藏辑要 鬼集.pdf",
+        id: "zh23",
+        name: "鬼集",
+        offset: 0,
+        entries: [
+          { title: "玉詮卷一", page: 1 },
+          { title: "目錄", page: 1 },
+          { title: "立壇宗旨", page: 2 },
+          { title: "皈壇規約", page: 6 },
+          { title: "讀詮心法", page: 17 },
+          { title: "太上道德大天尊", page: 18 },
+          { title: "浯邱天公", page: 19 },
+          { title: "本師玉京左公天子玉光普照天尊", page: 25 },
+          { title: "文昌帝君更生永命天尊", page: 90 },
+          { title: "正陽帝君飛行救劫天尊", page: 93 },
+          { title: "孚佑帝君純陽妙道天尊", page: 99 },
+          { title: "玉詮卷二", page: 110 },
+          { title: "目錄", page: 110 },
+          { title: "白大真人", page: 111 },
+          { title: "羅真人", page: 144 },
+          { title: "楊大真人", page: 149 },
+          { title: "朱大真人", page: 151 },
+          { title: "王大真人", page: 177 },
+          { title: "郁大真人", page: 180 },
+          { title: "鄧大真人", page: 181 },
+          { title: "玉詮卷三", page: 183 },
+          { title: "目錄", page: 183 },
+          { title: "金闕左廡飛玄八大金神", page: 184 },
+          { title: "金闕下殿飛靈四大天君", page: 205 },
+          { title: "金闕掌飛立法大使白大天君", page: 236 },
+          { title: "玉詮卷四", page: 251 },
+          { title: "目錄", page: 251 },
+          { title: "天部神威五雷都統劉大天君", page: 252 },
+          { title: "先天主教護國衛道朱大天君", page: 253 },
+          { title: "先天猛火降邪輔正王大天君", page: 254 },
+          { title: "太上神威真元顯應關大天君", page: 294 },
+          { title: "玉詮卷五", page: 300 },
+          { title: "目錄", page: 300 },
+          { title: "正一天師", page: 301 },
+          { title: "葛真人", page: 304 },
+          { title: "許真人", page: 307 },
+          { title: "韓真人", page: 310 },
+          { title: "薩真人", page: 311 },
+          { title: "白真人", page: 312 },
+          { title: "羅真人", page: 320 },
+          { title: "南華真人", page: 346 },
+          { title: "赤松真人", page: 347 },
+          { title: "陶真人", page: 348 },
+          { title: "李真人", page: 350 },
+          { title: "南宮 邲馮二真人", page: 352 },
+          { title: "祁真人", page: 354 },
+          { title: "陳真人", page: 356 },
+          { title: "蘇真人", page: 360 },
+          { title: "真詮  陽道生傳本 彭定求校正", page: 363 },
+          { title: "重刻真詮小引", page: 363 },
+          { title: "真詮序", page: 364 },
+          { title: "遇真記", page: 366 },
+          { title: "玄家正眼目錄卷上會論", page: 368 },
+          { title: "真詮卷上 忘精神而超生之道", page: 371 },
+          { title: "真詮卷下 見精神而久生之道", page: 398 },
+          { title: "心傳述證錄  梅芳老人", page: 421 },
+          { title: "心傳述證錄序", page: 421 },
+          { title: "無極圖", page: 422 },
+          { title: "混極圖", page: 423 },
+          { title: "元極圖", page: 424 },
+          { title: "靈極圖", page: 425 },
+          { title: "太極圖", page: 426 },
+          { title: "中極圖", page: 428 },
+          { title: "少極圖", page: 429 },
+          { title: "太陽圖", page: 430 },
+          { title: "太陰圖", page: 431 },
+          { title: "象明圖", page: 432 },
+          { title: "三才圖", page: 433 },
+          { title: "易有太極圖", page: 434 },
+          { title: "兩儀圖", page: 436 },
+          { title: "四象五行圖", page: 437 },
+          { title: "八卦六虛圖", page: 438 },
+          { title: "伏羲擬山定卦圖", page: 440 },
+          { title: "文王八卦易位圖", page: 441 },
+          { title: "六十四卦圖", page: 444 },
+          { title: "六十四卦運行圖", page: 446 },
+          { title: "乾坤闔闢圖", page: 449 },
+          { title: "六十四卦剛柔相摩圖", page: 451 },
+          { title: "六十四卦節氣圖", page: 452 },
+          { title: "陰陽消息圖解", page: 455 },
+          { title: "精一執中", page: 458 },
+          { title: "聖學法天", page: 460 },
+          { title: "大學則易", page: 462 },
+          { title: "中庸參贊", page: 464 },
+          { title: "鬼神造化", page: 466 },
+          { title: "持志養氣", page: 468 },
+          { title: "仁義禮智四端", page: 470 },
+          { title: "天根月窟", page: 472 },
+          { title: "象月火候", page: 475 },
+          { title: "虛無生道", page: 477 },
+        ]
+      },
+      {
+        file: "24重刊道藏辑要 柳集.pdf",
+        id: "zh24",
+        name: "柳集",
+        offset: 0,
+        entries: [
+          { title: "懺法大觀  柳守元", page: 1 },
+          { title: "序", page: 1 },
+          { title: "目錄", page: 6 },
+          { title: "玄祖懴", page: 8 },
+          { title: "玉清懴", page: 23 },
+          { title: "上清懴", page: 34 },
+          { title: "太清懴", page: 46 },
+          { title: "太上懴", page: 58 },
+          { title: "木父懴", page: 77 },
+          { title: "金母懴", page: 85 },
+          { title: "玉皇懴", page: 97 },
+          { title: "后土懴", page: 146 },
+          { title: "三光懴", page: 169 },
+          { title: "斗姆懴", page: 184 },
+          { title: "慈航懴", page: 197 },
+          { title: "太乙懴", page: 212 },
+          { title: "天官懴", page: 231 },
+          { title: "地官懴", page: 243 },
+          { title: "水官懴", page: 255 },
+          { title: "雷祖懴", page: 267 },
+          { title: "北極懴", page: 285 },
+          { title: "歲君懴", page: 304 },
+          { title: "東嶽懴", page: 322 },
+          { title: "文昌懴", page: 341 },
+          { title: "無極懴", page: 367 },
+          { title: "關帝懴", page: 388 },
+          { title: "八洞懴", page: 402 },
+          { title: "四相懴", page: 424 },
+          { title: "傳薪懴", page: 436 },
+          { title: "領班懴", page: 455 },
+          { title: "三茅懴", page: 469 },
+          { title: "旻天懴", page: 482 },
+          { title: "水府懴", page: 502 },
+          { title: "火官懴", page: 525 },
+          { title: "天醫懴", page: 539 },
+          { title: "三寶萬靈法懴  王守上", page: 557 },
+          { title: "太上靈寶朝天謝罪法懺", page: 1254 },
+        ]
+      },
+      {
+        file: "25重刊道藏辑要 星集.pdf",
+        id: "zh25",
+        name: "星集",
+        offset: 0,
+        entries: [
+          { title: "漢丞相諸葛忠武侯集  三十六世孫諸葛羲基編辑", page: 1 },
+          { title: "漢丞相諸葛忠武侯集敘", page: 1 },
+          { title: "卷一-年譜", page: 3 },
+          { title: "綱目", page: 13 },
+          { title: "卷二-傳", page: 16 },
+          { title: "卷三-傳", page: 32 },
+          { title: "卷四-附傳", page: 49 },
+          { title: "卷五-附傳", page: 67 },
+          { title: "卷六-附傳", page: 85 },
+          { title: "卷七-遺文", page: 103 },
+          { title: "便宜十六策", page: 111 },
+          { title: "卷八-將苑五十篇", page: 126 },
+          { title: "遺事", page: 141 },
+          { title: "卷九-遺蹟", page: 152 },
+          { title: "卷十-八陣", page: 174 },
+          { title: "卷十一-傳-別傳", page: 201 },
+          { title: "卷十二-詩-祠廟", page: 218 },
+          { title: "圖像", page: 230 },
+          { title: "八陣", page: 233 },
+          { title: "卷十三-詩 -遺蹟", page: 239 },
+          { title: "懷古", page: 250 },
+          { title: "卷十四-賦", page: 255 },
+          { title: "記", page: 262 },
+          { title: "銘", page: 268 },
+          { title: "卷十五-碑記", page: 270 },
+          { title: "卷十六-碑記", page: 287 },
+          { title: "卷十七-評論", page: 303 },
+          { title: "卷十八-評論", page: 321 },
+          { title: "卷十九-評論", page: 334 },
+          { title: "卷二十-論", page: 351 },
+          { title: "說", page: 356 },
+          { title: "贊", page: 358 },
+          { title: "祭文", page: 360 },
+          { title: "卷二十一-別見", page: 363 },
+          { title: "太極圖說  周子作 朱子注", page: 372 },
+          { title: "通書  周子作 朱子注", page: 385 },
+          { title: "皇極經世書  邵康節", page: 410 },
+          { title: "經世衍易圖", page: 410 },
+          { title: "經世天地四象圖", page: 411 },
+          { title: "經世聲音圖", page: 412 },
+          { title: "觀物內篇", page: 415 },
+          { title: "擊壤集  康節先生邵雍", page: 432 },
+          { title: "文帝孝經  朱珪石君敬校 蔣予夢因重訂", page: 486 },
+          { title: "文帝孝經原序", page: 486 },
+          { title: "文帝孝經原跋", page: 488 },
+          { title: "育子章第一", page: 489 },
+          { title: "體親章第二", page: 490 },
+          { title: "辦孝章第三", page: 493 },
+          { title: "守身章第四", page: 495 },
+          { title: "教孝章第五", page: 497 },
+          { title: "孝感章第六", page: 498 },
+          { title: "元皇大道真君救劫寶經   朱珪石君敬校 蔣予夢因重訂", page: 503 },
+          { title: "文昌延嗣經  朱珪石君敬校 蔣予夢因重訂", page: 511 },
+          { title: "陰騭文註  朱珪石君敬校 蔣予夢因重訂", page: 521 },
+          { title: "關帝諸經", page: 572 },
+          { title: "三界伏魔關聖帝君忠孝忠義真經", page: 572 },
+          { title: "三界伏魔關聖帝君忠孝護國翊運真經", page: 575 },
+          { title: "關聖帝君濟世消災集福忠義經", page: 578 },
+          { title: "關帝寶懺", page: 584 },
+          { title: "履歷事實", page: 586 },
+          { title: "辭曹操書", page: 587 },
+          { title: "附錄贊歌", page: 587 },
+          { title: "關聖帝君本傳", page: 589 },
+          { title: "年譜", page: 593 },
+          { title: "世系考", page: 595 },
+        ]
+      },
+      {
+        file: "26重刊道藏辑要 张集.pdf",
+        id: "zh26",
+        name: "張集",
+        offset: 0,
+        entries: [
+          { title: "清微玄範道門功課  柳守元撰", page: 1 },
+          { title: "太上玄門早壇功課經", page: 46 },
+          { title: "太上玄門晚壇功課經", page: 64 },
+          { title: "太上老君戒經", page: 91 },
+          { title: "三洞眾戒文  張萬福編錄", page: 127 },
+          { title: "太微靈書紫文仙忌真記上經", page: 140 },
+          { title: "虛皇天尊初真十戒文", page: 143 },
+          { title: "太上九真妙戒金籙度命拔罪妙經", page: 149 },
+          { title: "太上十二上品飛天法輪勸戒妙經  左仙翁述", page: 157 },
+          { title: "太極真人說二十四門戒經", page: 165 },
+          { title: "全真清規  陸道和編集", page: 171 },
+          { title: "三洞修道儀", page: 182 },
+          { title: "十戒功過格 純陽呂祖天師示定", page: 190 },
+          { title: "警世功過格  純陽呂祖天師示定", page: 251 },
+          { title: "求心篇", page: 251 },
+          { title: "要修科儀戒律鈔  朱法滿撰", page: 280 },
+          { title: "太上濟度章赦", page: 319 },
+          { title: "无上黃籙大齋立成儀  蔣叔輿編集", page: 369 },
+          { title: "紫皇鍊度玄科", page: 446 },
+          { title: "神功妙濟真君禮文", page: 468 },
+          { title: "三壇圓滿天仙大戒略說  柳守元", page: 476 },
+          { title: "初真戒律  崑陽子王常月", page: 500 },
+          { title: "中極戒", page: 533 },
+        ]
+      },
+      {
+        file: "27重刊道藏辑要 翼集.pdf",
+        id: "zh27",
+        name: "翼集",
+        offset: 0,
+        entries: [
+          { title: "上清三尊譜錄", page: 1 },
+          { title: "終南山祖庭仙真內傳  李道謙", page: 10 },
+          { title: "終南山說經臺歷代真仙碑記", page: 65 },
+          { title: "西川青羊宮碑記", page: 80 },
+          { title: "玄元十子圖", page: 98 },
+          { title: "二仙菴碑記", page: 112 },
+          { title: "四川青羊宮碑記", page: 136 },
+          { title: "甘水仙源錄  李道謙", page: 151 },
+          { title: "三洞群仙錄  陳葆光", page: 353 },
+          { title: "三仙真經", page: 643 },
+          { title: "太華蓋山三仙祖師記文", page: 643 },
+          { title: "橋仙觀碑記  顏真卿", page: 643 },
+          { title: "三真君記  李沖元", page: 644 },
+          { title: "太華蓋山三仙真君解冤滅罪度人心經", page: 647 },
+          { title: "紫元洞天三仙法懺", page: 652 },
+          { title: "華蓋山三仙事實  沈庭瑞", page: 657 },
+          { title: "華蓋山浮邱王郭三真君事實", page: 664 },
+          { title: "漢天師世家", page: 730 },
+          { title: "三十代天師虛靖真君語錄  張宇初", page: 810 },
+          { title: "金蓮正宗記  林間羽客樗櫟道人", page: 856 },
+          { title: "金蓮正宗仙源像傳", page: 902 },
+          { title: "七真年譜  夷山李道謙", page: 944 },
+          { title: "洞天福地嶽瀆名山記  杜光庭", page: 960 },
+          { title: "南嶽總勝集", page: 972 },
+          { title: "梅仙觀記  楊智遠", page: 992 },
+          { title: "西山群仙會真記  施肩吾希聖撰 李竦全美編", page: 1012 },
+          { title: "青城山記  彭洵編辑", page: 1054 },
+        ]
+      },
+      {
+        file: "28重刊道藏辑要 轸集.pdf",
+        id: "zh28",
+        name: "軫集",
+        offset: 0,
+        entries: [
+          { title: "天下名山記  新安吳秋士西邨選 汪立名西亭校訂", page: 1 },
+          { title: "直隸", page: 1 },
+          { title: "江南", page: 69 },
+          { title: "浙江", page: 101 },
+          { title: "江西", page: 171 },
+          { title: "湖廣", page: 258 },
+          { title: "河南", page: 289 },
+          { title: "山東", page: 312 },
+          { title: "山西", page: 337 },
+          { title: "陝西", page: 359 },
+          { title: "福建", page: 376 },
+          { title: "廣東", page: 404 },
+          { title: "廣西", page: 422 },
+          { title: "四川", page: 438 },
+          { title: "雲南", page: 459 },
+          { title: "貴州", page: 475 },
+        ]
+      },
+    ];
+  const container = document.getElementById('dynamic-toc');
+  const quickNav = document.getElementById('quickNav');
+
+  function buildTOC() {
+    let html = '';
+    let navHtml = '';
+    for (let i = 0; i < daozangData.length; i++) {
+      const ji = daozangData[i];
+      navHtml += `<span class="constellation-card" onclick="scrollToSection('${ji.id}')">${ji.name}</span>`;
+      html += `<div class="ji-section" id="${ji.id}">`;
+      html += `<div class="ji-title" onclick="toggleSection('${ji.id}')">`;
+      html += `<span>${ji.name} <small class="entry-count">(${ji.entries.length}条  )</small></span>`;
+      html += `<span class="collapse-icon">▼</span></div>`;
+      html += `<ul class="entry-list" id="list-${ji.id}" style="max-height: 40000px;">`;
+      for (let j = 0; j < ji.entries.length; j++) {
+        const e = ji.entries[j];
+        const realPage = e.page + ji.offset;
+        html += `<li class="entry-item" data-search="${e.title.toLowerCase()}">`;
+        html += `<span class="clickable-entry" onclick="openPDF('${ji.file}', ${realPage})" title="打开 ${ji.file} 第${realPage}页（原始${e.page} ）">`;
+        html += `<span class="entry-title">${e.title}</span>`;
+        html += `<span class="entry-page">📄 ${e.page}</span>`;
+        html += `</span></li>`;
+      }
+      html += `</ul></div>`;
+    }
+    quickNav.innerHTML = navHtml;
+    container.innerHTML = html;
+  }
+
+  window.openPDF = function(fileName, realPageNumber) {
+    const url = basePath + fileName + '#page=' + realPageNumber;
+    window.open(url, '_blank');
+  };
+
+  window.toggleSection = function(id) {
+    const list = document.getElementById('list-' + id);
+    const title = document.getElementById(id).querySelector('.ji-title');
+    if (list.classList.contains('collapsed')) {
+      list.classList.remove('collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      title.classList.remove('collapsed');
+    } else {
+      list.style.maxHeight = list.scrollHeight + 'px';
+      requestAnimationFrame(() => {
+        list.classList.add('collapsed');
+        list.style.maxHeight = '0px';
+        title.classList.add('collapsed');
+      });
+    }
+  };
+
+  window.scrollToSection = function(id) {
+    const navHeight = document.querySelector('.top-nav').offsetHeight;
+    const el = document.getElementById(id);
+    if (el) {
+      const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navHeight - 20;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      el.style.transition = 'background 0.5s';
+      el.style.background = '#f5e7d5';
+      setTimeout(() => { el.style.background = ''; }, 1500);
+    }
+  };
+
+  window.filterEntries = function() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const noResult = document.getElementById('noResult');
+    let foundAny = false;
+    for (let i = 0; i < daozangData.length; i++) {
+      const ji = daozangData[i];
+      const section = document.getElementById(ji.id);
+      const list = document.getElementById('list-' + ji.id);
+      let sectionVisible = false;
+      for (let j = 0; j < ji.entries.length; j++) {
+        const item = list.children[j];
+        if (!item) continue;
+        if (query === '' || ji.entries[j].title.toLowerCase().includes(query)) {
+          item.classList.remove('hidden');
+          sectionVisible = true;
+          if (query !== '') foundAny = true;
+        } else {
+          item.classList.add('hidden');
+        }
+      }
+      section.classList.toggle('hidden-section', !sectionVisible && query !== '');
+      if (query === '') {
+        list.classList.remove('collapsed');
+        list.style.maxHeight = '40000px';
+        section.querySelector('.ji-title').classList.remove('collapsed');
+      }
+    }
+    noResult.style.display = (!foundAny && query !== '') ? 'block' : 'none';
+  };
+
+  const backBtn = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    backBtn.classList.toggle('show', window.scrollY > 400);
+  });
+  backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  buildTOC();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>道藏全书目录浏览器</title>
+  <style>
+    /* ====== 样式与之前完全一致（此处省略节省篇幅，实际保留完整） ====== */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#f5efe0; font-family:"Microsoft YaHei","微软雅黑","SimSun","宋体","Noto Serif SC",serif; color:#3e2e1f; padding:0; line-height:2; padding-top:80px; }
+    .top-nav { position:fixed; top:0; left:0; right:0; z-index:2000; background:linear-gradient(135deg,#4a2c1a 0%,#5d3a1a 50%,#4a2c1a 100%); box-shadow:0 4px 20px rgba(0,0,0,0.3); border-bottom:2px solid #b8864e; }
+    .nav-inner { max-width:1400px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0.5rem 1.5rem; flex-wrap:wrap; }
+    .nav-brand { display:flex; align-items:center; gap:0.6rem; cursor:pointer; text-decoration:none; white-space:nowrap; padding:0.3rem 0; }
+    .nav-logo { width:42px; height:42px; background:linear-gradient(135deg,#d4a84b 0%,#b8864e 50%,#8b6914 100%); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.3); border:2px solid #e3c78a; flex-shrink:0; }
+    .nav-logo svg { width:24px; height:24px; fill:#fff; }
+    .nav-title { font-size:1.2rem; font-weight:bold; color:#e3c78a; letter-spacing:3px; text-shadow:1px 1px 2px rgba(0,0,0,0.5); }
+    .nav-menu { display:flex; list-style:none; gap:0.3rem; flex-wrap:wrap; align-items:center; padding:0.3rem 0; }
+    .nav-menu li { position:relative; }
+    .nav-menu a { display:block; padding:0.4rem 0.9rem; color:#e3d5b8; text-decoration:none; font-size:0.9rem; font-weight:500; border-radius:1.5rem; transition:all 0.25s ease; white-space:nowrap; letter-spacing:1px; border:1px solid transparent; }
+    .nav-menu a:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(227,199,138,0.4); }
+    .nav-menu a.active { background:#b8864e; color:#fff; border-color:#d4a84b; font-weight:bold; }
+    .nav-separator { color:#8b6b4a; font-size:0.8rem; margin:0 0.1rem; user-select:none; }
+    .nav-toggle { display:none; background:none; border:1px solid #b8864e; color:#e3c78a; font-size:1.5rem; cursor:pointer; padding:0.3rem 0.7rem; border-radius:0.5rem; margin-left:auto; }
+    @media (max-width:900px) { .nav-menu { display:none; width:100%; flex-direction:column; gap:0.2rem; padding:0.5rem 0; } .nav-menu.open { display:flex; } .nav-toggle { display:block; } .nav-inner { flex-wrap:wrap; } .nav-separator { display:none; } body { padding-top:60px; } }
+    .container { max-width:1400px; margin:0 auto; background:rgba(255,250,240,0.8); backdrop-filter:blur(10px); border-radius:2.5rem; padding:2.5rem 2rem; box-shadow:0 25px 50px rgba(100,70,30,0.2); border:1px solid #ddc7a2; margin-bottom:2rem; }
+    h1 { text-align:center; font-size:2.8rem; color:#4a2c1a; margin-bottom:0.5rem; font-weight:600; letter-spacing:6px; text-shadow:2px 2px 0 rgba(200,170,110,0.3); }
+    .sub-info { text-align:center; font-size:1rem; color:#5b4a32; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px dashed #c8aa7a; }
+    .search-box { text-align:center; margin-bottom:1.5rem; }
+    .search-box input { width:80%; max-width:600px; padding:0.7rem 1.8rem; border:2px solid #dbbc87; border-radius:2.5rem; font-size:1rem; background:#fef9f0; color:#3e2e1f; outline:none; transition:border-color 0.3s; }
+    .search-box input:focus { border-color:#8b4513; }
+    .no-result { text-align:center; color:#8b5a2b; padding:1rem; display:none; font-size:1.1rem; }
+    .quick-nav { margin-bottom:2rem; }
+    .quick-nav .nav-divider { text-align:center; margin:1.5rem 0 0.8rem; position:relative; }
+    .quick-nav .nav-divider span { background:#f5efe0; padding:0 1.2rem; font-size:1rem; font-weight:bold; color:#7b5a3a; letter-spacing:2px; position:relative; z-index:1; }
+    .quick-nav .nav-divider::before { content:''; position:absolute; top:50%; left:10%; right:10%; height:1px; background:linear-gradient(to right,transparent,#c8aa7a,#c8aa7a,transparent); z-index:0; }
+    .nav-books-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:0.5rem; padding:0.3rem 0; }
+    .nav-book-card { background:#f7efe0; border:1px solid #dbbc87; border-radius:2rem; padding:0.3rem 0.9rem; font-size:0.85rem; font-weight:500; color:#5d3a1a; transition:all 0.2s ease; box-shadow:0 4px 8px rgba(120,80,40,0.1); cursor:pointer; white-space:nowrap; }
+    .nav-book-card:hover { background:#e7d5b7; border-color:#b38b5b; transform:translateY(-2px); }
+    .series-divider { text-align:center; margin:2.5rem 0 1.5rem; position:relative; }
+    .series-divider span { background:#f5efe0; padding:0 1.5rem; font-size:1.3rem; font-weight:bold; color:#5d3a1a; letter-spacing:3px; position:relative; z-index:1; }
+    .series-divider::before { content:''; position:absolute; top:50%; left:5%; right:5%; height:2px; background:linear-gradient(to right,transparent,#b8864e,#b8864e,transparent); z-index:0; }
+    .books-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.5rem; margin-bottom:2rem; }
+    .book-card { background:#fbf5e8; border:1px solid #dbbc87; border-radius:1.5rem; padding:1.2rem; box-shadow:0 8px 20px rgba(120,80,40,0.1); transition:all 0.2s ease; }
+    .book-card:hover { box-shadow:0 12px 28px rgba(120,80,40,0.18); border-color:#b38b5b; }
+    .book-title { font-size:1.2rem; font-weight:bold; color:#8b4513; border-bottom:2px solid #dbbc87; padding-bottom:0.5rem; margin-bottom:0.8rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; }
+    .book-title .collapse-icon { font-size:1rem; transition:transform 0.3s; }
+    .book-title.collapsed .collapse-icon { transform:rotate(-90deg); }
+    .entry-list { list-style:none; overflow:hidden; transition:max-height 0.4s ease; }
+    .entry-list.collapsed { max-height:0 !important; }
+    .entry-item { display:flex; align-items:baseline; justify-content:space-between; padding:0.25rem 0.4rem; margin-bottom:0.15rem; border-bottom:1px dotted #dec29b; border-radius:0.4rem; transition:background 0.2s; }
+    .entry-item:hover { background:#f4e5cf; }
+    .clickable-entry { cursor:pointer; text-decoration:none; color:#2e4a2b; display:flex; align-items:baseline; flex-wrap:wrap; width:100%; justify-content:space-between; }
+    .clickable-entry:hover { color:#1e3b1a; text-decoration:underline; text-decoration-color:#b4945a; }
+    .entry-title { font-size:0.95rem; font-weight:500; color:#3b2a17; }
+    .entry-page { font-size:0.8rem; color:#6b4f32; background:#efe0ca; padding:0.1rem 0.6rem; border-radius:20px; font-weight:500; white-space:nowrap; margin-left:0.5rem; }
+    .back-to-top { position:fixed; right:2rem; bottom:2rem; width:50px; height:50px; border-radius:50%; background:#8b4513; color:#fff; border:2px solid #dbbc87; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 12px rgba(100,70,40,0.3); z-index:1500; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:0.3s; }
+    .back-to-top.show { opacity:1; visibility:visible; }
+    hr { margin:2rem 0; border:1px solid #d0b182; }
+    .footer { text-align:right; font-size:0.9rem; color:#7b684c; margin-top:1rem; }
+    #searchResults { display:none; margin-top:1.5rem; padding:0.5rem 0; }
+    #searchResults .result-item { display:flex; align-items:baseline; justify-content:space-between; padding:0.3rem 0.8rem; margin-bottom:0.15rem; border-bottom:1px dotted #c8aa7a; border-radius:0.4rem; background:#fdf9f2; transition:background 0.2s; cursor:pointer; }
+    #searchResults .result-item:hover { background:#f4e5cf; }
+    #searchResults .result-item .result-series { font-size:0.75rem; color:#8b6b4a; background:#efe0ca; padding:0.05rem 0.6rem; border-radius:12px; margin-right:0.8rem; white-space:nowrap; font-weight:500; }
+    #searchResults .result-item .result-book { font-weight:600; color:#5d3a1a; margin-right:0.8rem; font-size:0.9rem; }
+    #searchResults .result-item .result-title { flex:1; color:#3b2a17; font-size:0.95rem; }
+    #searchResults .result-item .result-page { font-size:0.8rem; color:#6b4f32; background:#efe0ca; padding:0.1rem 0.6rem; border-radius:20px; white-space:nowrap; margin-left:0.5rem; }
+    @media (max-width:768px) { .books-grid { grid-template-columns:1fr; } body { padding-top:60px; } .container { padding:1.5rem 1rem; border-radius:1.5rem; } h1 { font-size:2rem; } #searchResults .result-item { flex-wrap:wrap; } #searchResults .result-item .result-series, #searchResults .result-item .result-book { margin-bottom:0.1rem; } }
+    /* 展开进度提示 */
+    #expandProgress { display:none; text-align:center; padding:0.5rem; color:#8b6b4a; font-size:0.9rem; }
+  </style>
+</head>
+<body>
+
+<!-- ==================== 顶部导航栏（略） ==================== -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="道藏全书目录.html" class="nav-brand" title="道藏全书首页">
+      <div class="nav-logo"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="none" stroke="#fff" stroke-width="2"/><path d="M12 1 A11 11 0 0 1 12 23 A5.5 5.5 0 0 1 12 12 A5.5 5.5 0 0 0 12 1" fill="#fff"/><circle cx="12" cy="7.5" r="2" fill="#4a2c1a"/><circle cx="12" cy="16.5" r="2" fill="#fff"/></svg></div>
+      <span class="nav-title">道藏全书</span>
+    </a>
+    <button class="nav-toggle" onclick="toggleNavMenu()" aria-label="菜单">☰</button>
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="道藏全书目录.html" class="active" title="首页">📚 首页</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./正统道藏/0正统道藏目录.html" title="正统道藏">正统道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./藏外道书/0藏外道书目录.html" title="藏外道书">藏外道书</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./道藏辑要/0道藏辑要目录.html" title="道藏辑要">道藏辑要</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./敦煌道藏/0敦煌道藏目录.html" title="敦煌道藏">敦煌道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./中华道藏/0中华道藏目录.html" title="中华道藏">中华道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./中华续道藏/0中华续道藏目录.html" title="中华续道藏">中华续道藏</a></li>
+      <li><span class="nav-separator">|</span></li>
+      <li><a href="./庄林续道藏/0庄林续道藏目录.html" title="庄林续道藏">庄林续道藏</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ==================== 主内容区 ==================== -->
+<div class="container" id="top">
+  <h1>道藏全书目录浏览器</h1>
+  <div class="sub-info"><p>点击经名打开PDF · 点击书名折叠/展开 · 支持搜索</p></div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索经名...（支持跨系列全局搜索）">
+  </div>
+  <div class="no-result" id="noResult">未找到匹配的经文</div>
+
+  <div class="quick-nav" id="quickNav"></div>
+  <div id="dynamic-content"></div>
+  <div id="searchResults"></div>
+  <div id="expandProgress"></div>
+
+  <hr>
+  <div class="footer">道藏全书目录浏览器 · 数据持续扩充中</div>
+</div>
+
+<button class="back-to-top" id="backToTop" title="回到顶部">▲</button>
+
+<script>
+(function() {
+  // ==================== 导航菜单交互 ====================
+  window.toggleNavMenu = function() {
+    document.getElementById('navMenu').classList.toggle('open');
+  };
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('navMenu');
+    if (menu.classList.contains('open') && !e.target.closest('.nav-menu') && !e.target.closest('.nav-toggle')) {
+      menu.classList.remove('open');
+    }
+  });
+
+  // ==================== 路径配置 ====================
+  function getBasePath() {
+    if (window.location.protocol === 'file:') {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      if (lastSlash !== -1) return path.substring(0, lastSlash + 1);
+    }
+    return '';
+  }
+  const basePath = getBasePath();
+  const seriesPaths = {
+    "正统道藏": "正统道藏/", "藏外道书": "藏外道书/", "道藏辑要": "道藏辑要/",
+    "敦煌道藏": "敦煌道藏/", "中华道藏": "中华道藏/", "中华续道藏": "中华续道藏/", "庄林续道藏": "庄林续道藏/"
+  };
+  function getFullPath(seriesName, fileName) {
+    return basePath + (seriesPaths[seriesName] || '') + fileName;
+  }
+
+  const contentDiv = document.getElementById('dynamic-content');
+  const quickNavDiv = document.getElementById('quickNav');
+  const searchResultsDiv = document.getElementById('searchResults');
+  const progressDiv = document.getElementById('expandProgress');
+
+  // ==================== 全局状态 ====================
+  let metaSeries = [];
+  let entriesMap = {};
+  let flatEntries = [];
+  let isEntriesReady = false;
+  let expandTimer = null;          // 分批展开定时器
+  let bookIdsToExpand = [];        // 待展开的书籍ID列表
+  let isExpanding = false;
+
+  // ==================== 渲染书籍卡片 ====================
+  function buildQuickNav() {
+    let html = '';
+    for (const series of metaSeries) {
+      html += `<div class="nav-divider"><span>◆ ${series.name} ◆</span></div><div class="nav-books-grid">`;
+      for (const book of series.books) {
+        html += `<span class="nav-book-card" onclick="scrollToBook('${book.id}')">${book.name}</span>`;
+      }
+      html += '</div>';
+    }
+    quickNavDiv.innerHTML = html;
+  }
+
+  function buildAllContent() {
+    let html = '';
+    for (const series of metaSeries) {
+      html += `<div class="series-divider"><span>◆ ${series.name} ◆</span></div><div class="books-grid">`;
+      for (const book of series.books) {
+        html += renderBookCard(book);
+      }
+      html += '</div>';
+    }
+    contentDiv.innerHTML = html;
+  }
+
+  function renderBookCard(book) {
+    return `<div class="book-card" data-bookid="${book.id}" id="book-${book.id}">
+      <div class="book-title" onclick="toggleSection('${book.id}')">
+        <span>${book.name} <small style="font-size:0.7em;color:#8b5a2b;">(${book.entryCount}条)</small></span>
+        <span class="collapse-icon">▼</span>
+      </div>
+      <ul class="entry-list collapsed" id="list-${book.id}" style="max-height:0;overflow:hidden;"></ul>
+    </div>`;
+  }
+
+  // ==================== 生成单本书的条目 ====================
+  function generateEntries(bookId) {
+    const list = document.getElementById('list-' + bookId);
+    if (!list || list.dataset.generated === 'true') return;
+
+    const entries = entriesMap[bookId] || [];
+    if (entries.length === 0) {
+      list.innerHTML = '<li style="padding:0.5rem;color:#8b5a2b;">该书籍暂无条目数据</li>';
+      list.dataset.generated = 'true';
+      list.style.maxHeight = list.scrollHeight + 'px';
+      return;
+    }
+
+    let seriesName = '';
+    let targetBook = null;
+    for (const s of metaSeries) {
+      const found = s.books.find(b => b.id === bookId);
+      if (found) { seriesName = s.name; targetBook = found; break; }
+    }
+    if (!targetBook) return;
+
+    let html = '';
+    for (const entry of entries) {
+      const realPage = entry.page + (targetBook.offset || 0);
+      html += `<li class="entry-item">
+        <span class="clickable-entry" onclick="openPDF('${seriesName}', '${targetBook.file}', ${entry.page}, ${targetBook.offset || 0})" title="打开第${realPage}页（原始${entry.page} + 偏移${targetBook.offset || 0}）">
+          <span class="entry-title">${entry.title}</span>
+          <span class="entry-page">📄 ${entry.page}</span>
+        </span>
+      </li>`;
+    }
+    list.innerHTML = html;
+    list.dataset.generated = 'true';
+    list.style.maxHeight = list.scrollHeight + 'px';
+  }
+
+  // ==================== 展开单本书（折叠状态改为展开） ====================
+  function expandBook(bookId) {
+    const list = document.getElementById('list-' + bookId);
+    if (!list) return;
+    // 如果尚未生成，先生成
+    if (list.dataset.generated !== 'true') {
+      generateEntries(bookId);
+    }
+    // 展开
+    list.classList.remove('collapsed');
+    list.style.maxHeight = list.scrollHeight + 'px';
+    const card = list.closest('.book-card');
+    const title = card.querySelector('.book-title');
+    title.classList.remove('collapsed');
+  }
+
+  // ==================== 分批展开所有书籍 ====================
+  function expandAllBooksBatch() {
+    if (!isEntriesReady) return;
+    if (isExpanding) return;
+    // 收集所有书籍ID
+    const allIds = [];
+    for (const series of metaSeries) {
+      for (const book of series.books) {
+        allIds.push(book.id);
+      }
+    }
+    if (allIds.length === 0) return;
+
+    bookIdsToExpand = allIds.slice();
+    isExpanding = true;
+    let processed = 0;
+    const batchSize = 5;   // 每次展开5本，可根据性能调整
+
+    progressDiv.style.display = 'block';
+    progressDiv.textContent = `⏳ 正在展开书籍章节... 0 / ${allIds.length}`;
+
+    function processBatch() {
+      const batch = bookIdsToExpand.splice(0, batchSize);
+      for (const id of batch) {
+        expandBook(id);
+      }
+      processed += batch.length;
+      progressDiv.textContent = `⏳ 正在展开书籍章节... ${processed} / ${allIds.length}`;
+
+      if (bookIdsToExpand.length > 0) {
+        // 使用 requestAnimationFrame 让浏览器在帧空闲时继续
+        requestAnimationFrame(processBatch);
+      } else {
+        progressDiv.textContent = `✅ 所有章节已展开 (${allIds.length} 本书)`;
+        setTimeout(() => { progressDiv.style.display = 'none'; }, 2000);
+        isExpanding = false;
+        expandTimer = null;
+      }
+    }
+
+    // 开始第一批（在下一个帧）
+    requestAnimationFrame(processBatch);
+  }
+
+  // ==================== 全局函数（暴露给 onclick） ====================
+  window.openPDF = function(seriesName, fileName, pageNumber, offset) {
+    const url = getFullPath(seriesName, fileName) + '#page=' + (pageNumber + (offset || 0));
+    window.open(url, '_blank');
+  };
+
+  window.toggleSection = function(id) {
+    const list = document.getElementById('list-' + id);
+    if (!list) return;
+    const card = list.closest('.book-card');
+    const title = card.querySelector('.book-title');
+
+    if (list.dataset.generated !== 'true') {
+      if (!isEntriesReady) {
+        showToast('⏳ 条目数据加载中，请稍后...');
+        return;
+      }
+      generateEntries(id);
+      list.classList.remove('collapsed');
+      title.classList.remove('collapsed');
+      requestAnimationFrame(() => list.style.maxHeight = list.scrollHeight + 'px');
+      return;
+    }
+
+    // 切换折叠
+    if (list.classList.contains('collapsed')) {
+      list.classList.remove('collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      title.classList.remove('collapsed');
+    } else {
+      list.style.maxHeight = list.scrollHeight + 'px';
+      requestAnimationFrame(() => {
+        list.classList.add('collapsed');
+        list.style.maxHeight = '0px';
+        title.classList.add('collapsed');
+      });
+    }
+  };
+
+  window.scrollToBook = function(id) {
+    const el = document.getElementById('book-' + id);
+    if (!el) return;
+    const navH = document.querySelector('.top-nav').offsetHeight;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - navH - 20, behavior: 'smooth' });
+    el.style.transition = 'background 0.5s';
+    el.style.background = '#f5e7d5';
+    setTimeout(() => el.style.background = '', 2000);
+    // 确保该书已展开（如果还没展开，立即展开）
+    const list = document.getElementById('list-' + id);
+    if (list && list.classList.contains('collapsed')) {
+      if (list.dataset.generated !== 'true') {
+        if (!isEntriesReady) { showToast('⏳ 数据加载中...'); return; }
+        generateEntries(id);
+      }
+      list.classList.remove('collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      const title = list.closest('.book-card').querySelector('.book-title');
+      title.classList.remove('collapsed');
+    }
+  };
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4a2c1a;color:#e3c78a;padding:0.5rem 1.5rem;border-radius:2rem;z-index:3000;font-size:0.9rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2000);
+  }
+
+  // ==================== 搜索逻辑 ====================
+  window.filterAllEntries = function() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const noResult = document.getElementById('noResult');
+    const content = document.getElementById('dynamic-content');
+    const resultsDiv = document.getElementById('searchResults');
+
+    resultsDiv.innerHTML = '';
+    resultsDiv.style.display = 'none';
+
+    if (query === '') {
+      content.style.display = '';
+      document.querySelectorAll('.quick-nav .nav-divider, .quick-nav .nav-books-grid, .series-divider, .book-card').forEach(el => el.style.display = '');
+      noResult.style.display = 'none';
+      return;
+    }
+
+    if (!isEntriesReady || flatEntries.length === 0) {
+      noResult.textContent = '⏳ 条目数据加载中，请稍后再搜索...';
+      noResult.style.display = 'block';
+      return;
+    }
+
+    content.style.display = 'none';
+    document.querySelectorAll('.quick-nav .nav-divider, .quick-nav .nav-books-grid, .series-divider, .book-card').forEach(el => el.style.display = 'none');
+
+    const matches = flatEntries.filter(item => item.entry.title.toLowerCase().includes(query));
+    if (matches.length === 0) { noResult.style.display = 'block'; return; }
+    noResult.style.display = 'none';
+
+    const fragment = document.createDocumentFragment();
+    const header = document.createElement('div');
+    header.style.cssText = 'padding:0.5rem 0;';
+    header.innerHTML = `<h2 style="font-weight:500;color:#5d3a1a;border-bottom:2px solid #b8864e;padding-bottom:0.3rem;margin-bottom:0.8rem;">📖 搜索结果（${matches.length}条）</h2>`;
+    fragment.appendChild(header);
+
+    for (const m of matches) {
+      const realPage = m.entry.page + m.offset;
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.setAttribute('onclick', `openPDF('${m.series}', '${m.bookFile}', ${m.entry.page}, ${m.offset})`);
+      div.innerHTML = `
+        <span class="result-series">${m.series}</span>
+        <span class="result-book">${m.book}</span>
+        <span class="result-title">${m.entry.title}</span>
+        <span class="result-page">📄 ${realPage}</span>
+      `;
+      fragment.appendChild(div);
+    }
+    resultsDiv.appendChild(fragment);
+    resultsDiv.style.display = 'block';
+  };
+
+  // ==================== 构建搜索索引 ====================
+  function buildFlatIndex() {
+    flatEntries = [];
+    for (const series of metaSeries) {
+      for (const book of series.books) {
+        const entries = entriesMap[book.id] || [];
+        for (const entry of entries) {
+          flatEntries.push({
+            series: series.name,
+            book: book.name,
+            bookFile: book.file,
+            offset: book.offset || 0,
+            entry: entry,
+            bookId: book.id
+          });
+        }
+      }
+    }
+  }
+
+  // ==================== 异步加载条目数据 ====================
+  async function loadEntries() {
+    try {
+      const resp = await fetch('entries.json');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      entriesMap = await resp.json();
+      isEntriesReady = true;
+      buildFlatIndex();
+      console.log('✅ entries.json 加载完成，共 ' + Object.keys(entriesMap).length + ' 本书');
+      // 开始分批展开
+      expandAllBooksBatch();
+    } catch (e) {
+      console.warn('⚠️ entries.json 加载失败，尝试从 data.js 兜底...', e);
+      try {
+        const script = document.createElement('script');
+        script.src = 'data.js';
+        document.head.appendChild(script);
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+          setTimeout(reject, 10000);
+        });
+        if (window.allSeries) {
+          for (const series of window.allSeries) {
+            for (const book of series.books) {
+              entriesMap[book.id] = book.entries || [];
+            }
+          }
+          isEntriesReady = true;
+          buildFlatIndex();
+          console.log('✅ 从 data.js 兜底加载成功');
+          expandAllBooksBatch();
+        }
+      } catch (e2) {
+        console.error('❌ 数据加载完全失败:', e2);
+        const tip = document.createElement('div');
+        tip.style.cssText = 'text-align:center;padding:1rem;color:#8b5a2b;';
+        tip.innerHTML = '⚠️ 条目数据加载失败，部分功能可能受限。请确保 entries.json 或 data.js 存在。';
+        contentDiv.parentNode.insertBefore(tip, contentDiv);
+      }
+    }
+  }
+
+  // ==================== 主初始化 ====================
+  async function init() {
+    // 1. 加载元数据
+    try {
+      const resp = await fetch('meta.json');
+      if (!resp.ok) throw new Error('meta.json 不存在');
+      const data = await resp.json();
+      metaSeries = data.series || [];
+    } catch (e) {
+      console.warn('meta.json 加载失败，尝试从 data.js 加载', e);
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'data.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+      if (window.allSeries) {
+        metaSeries = window.allSeries.map(s => ({
+          name: s.name,
+          books: s.books.map(b => ({ id: b.id, name: b.name, file: b.file, offset: b.offset || 0, entryCount: (b.entries || []).length }))
+        }));
+        for (const s of window.allSeries) {
+          for (const b of s.books) {
+            entriesMap[b.id] = b.entries || [];
+          }
+        }
+        isEntriesReady = true;
+        buildFlatIndex();
+      } else {
+        alert('❌ 数据加载失败，请确保 meta.json 或 data.js 存在');
+        return;
+      }
+    }
+
+    // 2. 立即渲染卡片
+    buildQuickNav();
+    buildAllContent();
+
+    // 3. 异步加载条目
+    if (!isEntriesReady) {
+      loadEntries();
+    } else {
+      // 如果已有条目数据（兜底情况），直接分批展开
+      expandAllBooksBatch();
+    }
+
+    // 4. 绑定搜索防抖
+    let timer = null;
+    document.getElementById('searchInput').addEventListener('input', function() {
+      clearTimeout(timer);
+      timer = setTimeout(() => filterAllEntries(), 1000);
+    });
+  }
+
+  // 回到顶部
+  const backBtn = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => backBtn.classList.toggle('show', window.scrollY > 400));
+  backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  init();
+})();
+</script>
+</body>
+</html>
